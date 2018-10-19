@@ -11,7 +11,10 @@
 
 	<sessionFactories>
 		<sessionFactory id="development1">
-			<dataSource>
+			<transactionManager type="JDBC">
+				<property name="" value=""/>
+			</transactionManager>
+			<dataSource id="">
 				<property name="driver" value="${mysql.driver}" />
 				<property name="url" value="${mysql.url}" />
 				<property name="username" value="${mysql.username}" />

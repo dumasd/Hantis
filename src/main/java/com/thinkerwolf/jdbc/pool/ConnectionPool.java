@@ -29,12 +29,16 @@ public class ConnectionPool {
 	private String password;
 	private String poolName;
 
-	private AtomicInteger errConn = new AtomicInteger();
+	private ThreadLocal<AtomicInteger> errConn = new ThreadLocal<AtomicInteger>() {
+		protected AtomicInteger initialValue() {
+			return new AtomicInteger(0);
+		};
+	};
 	private volatile boolean close;
 
 	private List<ProxyConnection> freeConns = new ArrayList<>();
 	private List<ProxyConnection> activeConns = new ArrayList<>();
-
+	
 	public static ConnectionPool getOrCreatePool(String poolName, Properties props)
 			throws ClassNotFoundException, SQLException {
 		ConnectionPool pool = poolCache.get(poolName);
@@ -83,13 +87,13 @@ public class ConnectionPool {
 					conn = createProxyConnection();
 				} catch (SQLException e) {
 					// try again
-					if (errConn.incrementAndGet() < maxErrorConn) {
+					if (errConn.get().incrementAndGet() < maxErrorConn) {
 						conn = getProxyConnection();
 					}
 				}
 			} else {
 				// try again
-				if (errConn.incrementAndGet() < maxErrorConn) {
+				if (errConn.get().incrementAndGet() < maxErrorConn) {
 					conn = getProxyConnection();
 				}
 			}
@@ -109,7 +113,7 @@ public class ConnectionPool {
 	}
 
 	public synchronized Connection getConnection() throws SQLException {
-		errConn.set(0);
+		errConn.get().set(0);
 		return getProxyConnection().getProxyConnection();
 	}
 

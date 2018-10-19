@@ -87,15 +87,6 @@ public class DBPoolDataSource extends AbstractDataSource {
 		super.finalize();
 	}
 
-	private void addHook() {
-		Runtime.getRuntime().addShutdownHook(new Thread("DBPool-shutdown-hook") {
-			@Override
-			public void run() {
-				forceClose();
-			}
-		});
-	}
-
 	private void forceClose() {
 		if (pool != null) {
 			pool.close();
