@@ -13,15 +13,15 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
     @Override
     protected Transaction doGetTransaction(TransactionDefinition defination) {
         // 根据dataSource作为key
-        TransactionSychronizationManager.getResource(dataSource);
-
-
-        return null;
+        JdbcResourceHolder holder = (JdbcResourceHolder) TransactionSychronizationManager.getResource(dataSource);
+        JdbcTransaction jdbcTransaction = new JdbcTransaction(holder);
+        return jdbcTransaction;
     }
 
     @Override
     protected boolean isExistsTransaction(Transaction transaction) {
-        return false;
+        JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
+        return jdbcTransaction.getResourceHolder() != null;
     }
 
 
@@ -29,6 +29,10 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
     private static class JdbcTransaction implements Transaction {
 
         private JdbcResourceHolder resourceHolder;
+
+        public JdbcTransaction(JdbcResourceHolder resourceHolder) {
+            this.resourceHolder = resourceHolder;
+        }
 
         @Override
         public void commit() throws SQLException {
@@ -45,6 +49,10 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
 
         }
 
+        public JdbcResourceHolder getResourceHolder() {
+            return resourceHolder;
+        }
+
     }
 
 
@@ -53,6 +61,10 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
         private DataSource dataSource;
 
         private Connection connection;
+
+        public JdbcResourceHolder(DataSource dataSource) {
+            this.dataSource = dataSource;
+        }
 
         @Override
         public Object getResource() {
