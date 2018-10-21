@@ -19,13 +19,7 @@ public interface Transaction {
 	 * 
 	 * @throws SQLException
 	 */
-	void clost() throws SQLException;
+	void close() throws SQLException;
 
-	/**
-	 * 获取连接
-	 * 
-	 * @return
-	 */
-	Connection getConnection() throws SQLException;
 
 }
