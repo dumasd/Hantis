@@ -7,6 +7,9 @@ public abstract class AbstractTransactionDefinition implements TransactionDefini
 
 	public AbstractTransactionDefinition(TransactionIsolationLevel isolationLevel,
 			TransactionPropagationBehavior propagationBehavior) {
+		if (isolationLevel == null || propagationBehavior == null) {
+			throw new IllegalArgumentException("");
+		}
 		this.isolationLevel = isolationLevel;
 		this.propagationBehavior = propagationBehavior;
 	}

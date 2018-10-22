@@ -26,10 +26,10 @@ public class DBPoolDataSourceTest {
 		ds.setDriver("com.mysql.cj.jdbc.Driver");
 		ds.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC");
 		ds.setUsername("root");
-		ds.setPassword("1234");
+		ds.setPassword("123");
 		ds.setMaxConn(100);
 		ds.setMinConn(2);
-
+		
 		int threadNum = 200;
 		while (threadNum-- > 0) {
 			final int n = threadNum;

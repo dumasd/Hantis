@@ -1,6 +1,5 @@
 package com.thinkerwolf.jdbc.transaction;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public interface Transaction {
@@ -21,5 +20,7 @@ public interface Transaction {
 	 */
 	void close() throws SQLException;
 
-
+	boolean isComplete();
+	
+	void setComplete();
 }

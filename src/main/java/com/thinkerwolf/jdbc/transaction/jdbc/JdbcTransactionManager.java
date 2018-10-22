@@ -8,82 +8,178 @@ import java.sql.SQLException;
 
 public class JdbcTransactionManager extends AbstractTransactionManager {
 
-    private DataSource dataSource;
+	private DataSource dataSource;
 
-    @Override
-    protected Transaction doGetTransaction(TransactionDefinition defination) {
-        // 根据dataSource作为key
-        JdbcResourceHolder holder = (JdbcResourceHolder) TransactionSychronizationManager.getResource(dataSource);
-        JdbcTransaction jdbcTransaction = new JdbcTransaction(holder);
-        return jdbcTransaction;
-    }
+	public DataSource getDataSource() {
+		return dataSource;
+	}
 
-    @Override
-    protected boolean isExistsTransaction(Transaction transaction) {
-        JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
-        return jdbcTransaction.getResourceHolder() != null;
-    }
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
 
+	@Override
+	protected Transaction doGetTransaction(TransactionDefinition defination) {
+		JdbcResourceHolder holder = (JdbcResourceHolder) TransactionSychronizationManager.getResource(dataSource);
+		JdbcTransaction jdbcTransaction = new JdbcTransaction(holder);
+		return jdbcTransaction;
+	}
 
+	@Override
+	protected boolean isExistsTransaction(Transaction transaction) {
+		JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
+		return jdbcTransaction.getResourceHolder() != null;
+	}
 
-    private static class JdbcTransaction implements Transaction {
+	@Override
+	protected Object doSuspend(Transaction transaction) {
+		JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
+		jdbcTransaction.setResourceHolder(null);
+		return TransactionSychronizationManager.unbindResource(dataSource);
+	}
 
-        private JdbcResourceHolder resourceHolder;
+	@Override
+	protected void doBegin(Transaction transaction, TransactionDefinition definition) throws TransactionException {
+		JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
+		JdbcResourceHolder holder = jdbcTransaction.resourceHolder;
+		try {
+			if (holder == null) {
+				holder = new JdbcResourceHolder(dataSource);
 
-        public JdbcTransaction(JdbcResourceHolder resourceHolder) {
-            this.resourceHolder = resourceHolder;
-        }
+				jdbcTransaction.setResourceHolder(holder);
+			}
+			TransactionSychronizationManager.bindResource(dataSource, holder);
+			Connection connection = dataSource.getConnection();
+			connection.setTransactionIsolation(definition.getIsolationLevel().getId());
+			connection.setAutoCommit(false);
+			holder.setConnection(connection);
+			holder.setPreviousIsolationLevel(connection.getTransactionIsolation());
+		} catch (SQLException e) {
+			throw new TransactionException("");
+		}
+	}
 
-        @Override
-        public void commit() throws SQLException {
+	@Override
+	protected void doResume(Transaction transaction, Object suspendResources) {
+		JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
+		JdbcResourceHolder holder = (JdbcResourceHolder) suspendResources;
+		jdbcTransaction.setResourceHolder(holder);
+		TransactionSychronizationManager.bindResource(dataSource, holder);
+	}
 
-        }
+	@Override
+	protected void doCommit(Transaction transaction) {
+		try {
+			transaction.commit();
+		} catch (SQLException e) {
+			throw new TransactionException("commit error");
+		}
+	}
 
-        @Override
-        public void rollback() throws SQLException {
+	@Override
+	protected void doRollback(Transaction transaction) {
+		try {
+			transaction.rollback();
+		} catch (SQLException e) {
+			throw new TransactionException("rollback errot");
+		}
+	}
 
-        }
+	@Override
+	protected void doClearAfterCompletion(Transaction transaction) {
+		TransactionSychronizationManager.unbindResource(dataSource);
+		JdbcTransaction jdbcTransaction = (JdbcTransaction) transaction;
+		JdbcResourceHolder holder = jdbcTransaction.resourceHolder;
+		try {
+			if (holder != null && holder.getConnection() != null) {
+				holder.getConnection().setTransactionIsolation(holder.getPreviousIsolationLevel());
+				if (holder.getConnection().isReadOnly()) {
+					holder.getConnection().setReadOnly(false);
+				}
+			}
+		} catch (Exception e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Can't reset jdbc connection");
+			}
+		}
 
-        @Override
-        public void close() throws SQLException {
+	}
 
-        }
+	private static class JdbcTransaction implements Transaction {
 
-        public JdbcResourceHolder getResourceHolder() {
-            return resourceHolder;
-        }
+		private JdbcResourceHolder resourceHolder;
 
-    }
+		public JdbcTransaction(JdbcResourceHolder resourceHolder) {
+			this.resourceHolder = resourceHolder;
+		}
 
+		@Override
+		public void commit() throws SQLException {
+			resourceHolder.connection.commit();
+		}
 
-    private static class JdbcResourceHolder implements ResourceHolder {
+		@Override
+		public void rollback() throws SQLException {
+			resourceHolder.connection.rollback();
+		}
 
-        private DataSource dataSource;
+		@Override
+		public void close() throws SQLException {
+			resourceHolder.connection.close();
+		}
 
-        private Connection connection;
+		public JdbcResourceHolder getResourceHolder() {
+			return resourceHolder;
+		}
 
-        public JdbcResourceHolder(DataSource dataSource) {
-            this.dataSource = dataSource;
-        }
+		public void setResourceHolder(JdbcResourceHolder resourceHolder) {
+			this.resourceHolder = resourceHolder;
+		}
 
-        @Override
-        public Object getResource() {
-            return dataSource;
-        }
+		@Override
+		public boolean isComplete() {
+			return false;
+		}
 
-        public Connection getConnection() {
-            if (connection == null) {
-                try {
-                    connection = dataSource.getConnection();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            return connection;
-        }
-    }
+		@Override
+		public void setComplete() {
+		}
 
+	}
 
+	public static class JdbcResourceHolder implements ResourceHolder {
 
+		private DataSource dataSource;
+
+		private Connection connection;
+
+		private int previousIsolationLevel;
+
+		public JdbcResourceHolder(DataSource dataSource) {
+			this.dataSource = dataSource;
+		}
+
+		@Override
+		public Object getResource() {
+			return dataSource;
+		}
+
+		public Connection getConnection() {
+			return connection;
+		}
+
+		public void setConnection(Connection connection) {
+			this.connection = connection;
+		}
+
+		public int getPreviousIsolationLevel() {
+			return previousIsolationLevel;
+		}
+
+		public void setPreviousIsolationLevel(int previousIsolationLevel) {
+			this.previousIsolationLevel = previousIsolationLevel;
+		}
+
+	}
 
 }
