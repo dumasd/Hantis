@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.thinkerwolf</groupId>
-	<artifactId>jdbc</artifactId>
+	<artifactId>hantis</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>jdbc</name>
+	<name>hantis</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -64,4 +64,5 @@
 
 	</dependencies>
 
+	
 </project>
