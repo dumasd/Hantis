@@ -46,7 +46,7 @@ public class DBXAPoolDataSource extends AbstractXADataSource {
 
 	private XAConnection borrowFromPool() throws SQLException {
 		try {
-			return getPool().borrowObject().getProxyXAConnection();
+			return getPool().borrowObject().getXAConnection();
 		} catch (Exception e) {
 			throw new SQLException(e);
 		}

@@ -1,8 +1,5 @@
 package com.thinkerwolf.hantis.datasource.jdbc;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
 import com.thinkerwolf.hantis.datasource.AbstractDataSource;
 
 public abstract class AbstractJdbcDataSource extends AbstractDataSource {
@@ -11,16 +8,6 @@ public abstract class AbstractJdbcDataSource extends AbstractDataSource {
 	protected String password;
 
 	protected String url;
-
-	@Override
-	protected Connection doGetConnection() throws SQLException {
-		return null;
-	}
-
-	@Override
-	protected Connection doGetConnection(String username, String password) throws SQLException {
-		return null;
-	}
 
 	public String getUsername() {
 		return username;

@@ -42,7 +42,7 @@ public class DBPoolDataSource extends AbstractJdbcDataSource {
 			}
 		}
 		try {
-			return pool.borrowObject().getProxyConnection();
+			return pool.borrowObject().getConnection();
 		} catch (Exception e) {
 			throw new SQLException(e);
 		}

@@ -35,7 +35,7 @@ class ProxyConnection implements InvocationHandler {
 		}
 	}
 
-	public Connection getProxyConnection() {
+	public Connection getConnection() {
 		return proxyConnection;
 	}
 

@@ -24,7 +24,8 @@ public class PropertyUtils {
 				f.set(target, propertyValue);
 			}
 		} catch (Exception e) {
-			Method setterMethod = ReflectionUtils.getSetterMethod(target, propertyName, propertyValue.getClass());
+			Method setterMethod = ReflectionUtils.getSetterMethod(target.getClass(), propertyName,
+					propertyValue.getClass());
 			try {
 				ReflectionUtils.callMethod(target, setterMethod, propertyValue);
 			} catch (Exception e1) {
@@ -32,5 +33,7 @@ public class PropertyUtils {
 			}
 		}
 	}
-
+	
+	
+	
 }

@@ -29,8 +29,12 @@ class ProxyXAConnection implements InvocationHandler {
 
 	}
 
-	public XAConnection getProxyXAConnection() {
+	public XAConnection getXAConnection() {
 		return proxyXAConnection;
+	}
+
+	public XAConnection getRealXAConnection() {
+		return realXAConnection;
 	}
 
 }

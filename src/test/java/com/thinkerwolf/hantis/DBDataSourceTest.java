@@ -29,7 +29,7 @@ public class DBDataSourceTest {
 		ds.setPassword("123");
 		ds.setMaxConn(100);
 		ds.setMinConn(2);
-
+		
 		int threadNum = 100;
 		while (threadNum-- > 0) {
 			final int n = threadNum;
