@@ -1,13 +1,14 @@
 package com.thinkerwolf.hantis;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.thinkerwolf.hantis.common.JDBCType;
 import com.thinkerwolf.hantis.common.Params;
 import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
-import com.thinkerwolf.hantis.sql.SqlExecutor;
+import com.thinkerwolf.hantis.executor.SqlExecutor;
 
 public class SqlExecutorTest {
 
@@ -20,13 +21,18 @@ public class SqlExecutorTest {
 		ds.setPassword("123");
 		ds.setMaxConn(100);
 		ds.setMinConn(2);
-
+		
 		SqlExecutor sqlExe = new SqlExecutor();
 		sqlExe.setDataSource(ds);
 		Params params = new Params();
 		params.addParam(JDBCType.INTEGER, 3);
+		
+		String sql = "select * from blog where id = ? ";
+		
+		Map<String, Object> m = sqlExe.queryForOne(sql, params);
 		List<Blog> blogs = sqlExe.queryForList("select * from blog where id = ? ", params, Blog.class);
 		System.out.println(blogs);
+		System.out.println(m);
 
 	}
 

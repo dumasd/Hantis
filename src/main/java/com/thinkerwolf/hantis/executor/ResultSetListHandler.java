@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis.sql;
+package com.thinkerwolf.hantis.executor;
 
 import java.sql.ResultSet;
 import java.util.ArrayList;

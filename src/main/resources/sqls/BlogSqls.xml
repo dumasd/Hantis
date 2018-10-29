@@ -1,0 +1,16 @@
+<sqls namespace="tableBlog">
+	<select id="selectOne" resultType="com.thinkerwolf.hantis.Blog"
+		parameterType="map">
+		select * from blog
+		<where>
+			<if test="id != null">id = # { id } and title = # { title }</if>
+		</where>
+	</select>
+
+	<update id="updateOne" parameterType="map">
+		update blog set title =
+		#{content}, content = #{title}
+		where id = #{id}
+	</update>
+
+</sqls>

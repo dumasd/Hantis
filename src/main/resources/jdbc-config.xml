@@ -12,7 +12,7 @@
 	<sessionFactories>
 		<sessionFactory id="development1">
 			<transactionManager type="JDBC">
-				<property name="" value=""/>
+				<property name="" value="" />
 			</transactionManager>
 			<dataSource id="">
 				<property name="driver" value="${mysql.driver}" />
@@ -20,8 +20,12 @@
 				<property name="username" value="${mysql.username}" />
 				<property name="password" value="${mysql.password}" />
 			</dataSource>
+			<sqls>
+				<sql resource=""></sql>
+				<sql resource=""></sql>
+			</sqls>
 		</sessionFactory>
-
+		
 		<sessionFactory id="development2">
 			<dataSource>
 				<property name="driver" value="${mysql.driver}" />
@@ -31,9 +35,4 @@
 			</dataSource>
 		</sessionFactory>
 	</sessionFactories>
-
-
-
-
-
 </configuration>
