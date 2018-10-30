@@ -14,7 +14,7 @@ import org.w3c.dom.NodeList;
 import com.thinkerwolf.hantis.sql.SqlNode;
 
 public class XmlSqlNodeParser {
-	
+
 	public Map<String, SqlNode> parse(InputStream is) throws Throwable {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = factory.newDocumentBuilder();
@@ -22,14 +22,14 @@ public class XmlSqlNodeParser {
 		Element element = (Element) doc.getElementsByTagName("sqls").item(0);
 		String namespace = element.getAttribute("namespace");
 		Map<String, SqlNode> allSqlNode = new HashMap<>();
-		
+
 		NodeList selectNodeList = element.getElementsByTagName("select");
 		for (int i = 0, len = selectNodeList.getLength(); i < len; i++) {
 			Element el = (Element) selectNodeList.item(i);
 			String id = namespace + "." + el.getAttribute("id");
 			allSqlNode.put(id, NodeHandlerFactory.getNodeHandler("select").parse(el));
 		}
-
+		
 		NodeList updateNodeList = element.getElementsByTagName("update");
 		for (int i = 0, len = updateNodeList.getLength(); i < len; i++) {
 			Element el = (Element) updateNodeList.item(i);
