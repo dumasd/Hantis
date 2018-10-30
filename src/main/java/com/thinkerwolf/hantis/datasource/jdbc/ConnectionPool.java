@@ -4,8 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Iterator;
 
-import com.thinkerwolf.hantis.datasource.GenericObjectPool;
-import com.thinkerwolf.hantis.datasource.PoolableObjectFactory;
+import com.thinkerwolf.hantis.common.pool.GenericObjectPool;
+import com.thinkerwolf.hantis.common.pool.PoolableObjectFactory;
 
 /**
  * Connection Pool

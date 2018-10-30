@@ -3,14 +3,27 @@
 		parameterType="map">
 		select * from blog
 		<where>
-			<if test="id != null">id = # { id } and title = # { title }</if>
+			<if test="id != null">
+				id = # { id }
+			</if>
+			<if test="title != null">
+				title = # { title }
+			</if>
+			<if test="content != null">
+				content = #{content}
+			</if>
 		</where>
 	</select>
 
 	<update id="updateOne" parameterType="map">
 		update blog set title =
-		#{content}, content = #{title}
+		#{title}, content = #{content}
 		where id = #{id}
 	</update>
 
+	<update id="insertOne" parameterType="map">
+		insert into blog (id, title,
+		content) values (#{id}, # {title}, #{ content })
+	</update>
+	
 </sqls>

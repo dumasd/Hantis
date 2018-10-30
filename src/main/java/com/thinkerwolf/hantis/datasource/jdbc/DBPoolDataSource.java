@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.thinkerwolf.hantis.datasource.PoolableObjectFactory;
+import com.thinkerwolf.hantis.common.pool.PoolableObjectFactory;
 
 /**
  * 缓存数据源

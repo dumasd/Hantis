@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis.datasource;
+package com.thinkerwolf.hantis.common.pool;
 
 public class ObjectPoolException extends RuntimeException {
 

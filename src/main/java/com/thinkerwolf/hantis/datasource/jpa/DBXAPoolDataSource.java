@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import javax.sql.XAConnection;
 
-import com.thinkerwolf.hantis.datasource.PoolableObjectFactory;
+import com.thinkerwolf.hantis.common.pool.PoolableObjectFactory;
 
 /**
  * 
@@ -70,4 +70,20 @@ public class DBXAPoolDataSource extends AbstractXADataSource {
 		}
 	}
 
+	@Override
+	protected void finalize() throws Throwable {
+		// 被回收时强制将连接池关闭
+		forceClose();
+		super.finalize();
+	}
+
+	private void forceClose() {
+		if (pool != null) {
+			try {
+				pool.close();
+			} catch (Exception e) {
+				// ingore
+			}
+		}
+	}
 }

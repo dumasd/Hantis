@@ -6,7 +6,7 @@ import java.util.Properties;
 /**
  * 
  * @author wukai
- *
+ * 
  */
 public class SessionFactoryBuilder {
 

@@ -23,5 +23,8 @@ public final class Param {
 	public Object getValue() {
 		return value;
 	}
-
+	@Override
+	public String toString() {
+		return type.name() + ":" + value;
+	}
 }

@@ -3,6 +3,7 @@ package com.thinkerwolf.hantis.datasource.jpa;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.sql.SQLException;
 
 import javax.sql.XAConnection;
 
@@ -35,6 +36,13 @@ class ProxyXAConnection implements InvocationHandler {
 
 	public XAConnection getRealXAConnection() {
 		return realXAConnection;
+	}
+	
+	public void realClose() {
+		try {
+			realXAConnection.close();
+		} catch (SQLException e) {
+		}
 	}
 
 }
