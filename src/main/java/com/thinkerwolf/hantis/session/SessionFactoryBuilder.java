@@ -1,20 +1,52 @@
 package com.thinkerwolf.hantis.session;
 
-import java.io.InputStream;
-import java.util.Properties;
+import java.util.Map;
+
+import javax.sql.DataSource;
+
+import com.thinkerwolf.hantis.sql.SqlNode;
 
 /**
  * 
  * @author wukai
  * 
  */
-public class SessionFactoryBuilder {
+public final class SessionFactoryBuilder {
 
-	public SessionFactory build(InputStream is, Properties props) {
+	private String id;
+	private DataSource dataSource;
+	private Map<String, SqlNode> sqlNodeMap;
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public DataSource getDataSource() {
+		return dataSource;
+	}
+
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
+
+	public Map<String, SqlNode> getSqlNodeMap() {
+		return sqlNodeMap;
+	}
+
+	public void setSqlNodeMap(Map<String, SqlNode> sqlNodeMap) {
+		this.sqlNodeMap = sqlNodeMap;
+	}
+
+	/**
+	 * 创建新的SessionFactory
+	 */
+	public SessionFactory build() {
+
 		return null;
 	}
 
-	public SessionFactory build(InputStream is) {
-		return null;
-	}
 }

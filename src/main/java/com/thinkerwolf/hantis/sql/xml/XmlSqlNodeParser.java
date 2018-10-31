@@ -19,10 +19,10 @@ public class XmlSqlNodeParser {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = factory.newDocumentBuilder();
 		Document doc = db.parse(is);
-		Element element = (Element) doc.getElementsByTagName("sqls").item(0);
+		Element element = (Element) doc.getElementsByTagName("mapping").item(0);
 		String namespace = element.getAttribute("namespace");
 		Map<String, SqlNode> allSqlNode = new HashMap<>();
-
+		
 		NodeList selectNodeList = element.getElementsByTagName("select");
 		for (int i = 0, len = selectNodeList.getLength(); i < len; i++) {
 			Element el = (Element) selectNodeList.item(i);
@@ -36,8 +36,10 @@ public class XmlSqlNodeParser {
 			String id = namespace + "." + el.getAttribute("id");
 			allSqlNode.put(id, NodeHandlerFactory.getNodeHandler("update").parse(el));
 		}
-
 		return allSqlNode;
 	}
-
+	
+	
+	
+	
 }

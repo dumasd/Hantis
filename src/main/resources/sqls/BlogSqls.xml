@@ -1,4 +1,4 @@
-<sqls namespace="tableBlog">
+<mapping namespace="tableBlog">
 	<select id="selectOne" resultType="com.thinkerwolf.hantis.example.Blog"
 		parameterType="map">
 		select * from blog
@@ -26,4 +26,4 @@
 		content) values (#{id}, # {title}, #{ content })
 	</update>
 	
-</sqls>
+</mapping>

@@ -29,7 +29,7 @@ public class JdbcTransactionManagerTest {
 		JdbcTransactionManager transactionManager = new JdbcTransactionManager();
 		transactionManager.setDataSource(ds);
 		TransactionDefinition definition = new DefaultTransactionDefinition();
-
+		
 		Transaction transaction = transactionManager.getTransaction(definition);
 		JdbcResourceHolder holder = (JdbcResourceHolder) TransactionSychronizationManager.getResource(ds);
 		Connection conn = holder.getConnection();

@@ -4,6 +4,12 @@ import java.util.List;
 
 public class UpdateSqlNode extends AbstractSqlNode {
 
+	private Class<?> parameterType;
+	
+	public UpdateSqlNode(Class<?> parameterType) {
+		this.parameterType = parameterType;
+	}
+
 	@Override
 	public boolean generate(Sql sql) throws Throwable {
 		List<SqlNode> children = getChildren();
@@ -15,4 +21,10 @@ public class UpdateSqlNode extends AbstractSqlNode {
 		return true;
 	}
 
+	public Class<?> getParameterType() {
+		return parameterType;
+	}
+	
+	
+	
 }

@@ -1,33 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
+	<!-- 通用属性配置 -->
 	<props>
-		<prop name="mysql.driver" value="com.mysql.cj.jdbc.Driver" />
-		<prop name="mysql.url"
+		<property name="mysql.driver" value="com.mysql.cj.jdbc.Driver" />
+		<property name="mysql.url"
 			value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
-		<prop name="mysql.username" value="root" />
-		<prop name="mysql.password" value="123" />
+		<property name="mysql.username" value="root" />
+		<property name="mysql.password" value="123" />
 	</props>
 
+
+
+	<!-- Session工厂配置 -->
 	<sessionFactories>
+		<!-- 事务管理器配置 -->
+		<transactionManager type="JTA">
+			<property name="sessionFactories" value="development1,development2"></property>
+		</transactionManager>
+
 		<sessionFactory id="development1">
-			<transactionManager type="JDBC">
-				<property name="" value="" />
-			</transactionManager>
-			<dataSource id="">
+			<!-- 事务管理器配置 -->
+			<dataSource type="">
 				<property name="driver" value="${mysql.driver}" />
 				<property name="url" value="${mysql.url}" />
 				<property name="username" value="${mysql.username}" />
 				<property name="password" value="${mysql.password}" />
 			</dataSource>
-			<sqls>
-				<sql resource=""></sql>
-				<sql resource=""></sql>
-			</sqls>
+			<mappings>
+				<!-- 单个mapping -->
+				<mapping resource="file://" />
+				<mapping resource="classpath://" />
+			</mappings>
 		</sessionFactory>
-		
+
 		<sessionFactory id="development2">
-			<dataSource>
+			<dataSource type="">
 				<property name="driver" value="${mysql.driver}" />
 				<property name="url" value="${mysql.url}" />
 				<property name="username" value="${mysql.username}" />
@@ -35,4 +42,5 @@
 			</dataSource>
 		</sessionFactory>
 	</sessionFactories>
+
 </configuration>

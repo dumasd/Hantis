@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.junit.Test;
 
-import com.thinkerwolf.hantis.datasource.jpa.DBXAPoolDataSource;
+import com.thinkerwolf.hantis.datasource.jta.DBXAPoolDataSource;
 
 public class DBXADataSourceTest {
 	@Test

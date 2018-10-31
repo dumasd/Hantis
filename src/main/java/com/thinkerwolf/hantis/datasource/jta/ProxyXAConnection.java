@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis.datasource.jpa;
+package com.thinkerwolf.hantis.datasource.jta;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

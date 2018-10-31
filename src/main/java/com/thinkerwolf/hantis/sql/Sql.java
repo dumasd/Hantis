@@ -10,15 +10,17 @@ public class Sql {
 	 * 原始参数
 	 */
 	private Object inputParameter;
-
+	
 	private StringBuilder sqlBuilder = new StringBuilder();
-
+	
 	private List<Param> params = new Params();
-
+	
+	
+	
 	public Sql(Object inputParameter) {
 		this.inputParameter = inputParameter;
 	}
-
+	
 	public String getSql() {
 		return sqlBuilder.toString();
 	}
@@ -46,8 +48,8 @@ public class Sql {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("[SQL] " + sqlBuilder);
-		sb.append(" [Params] " + params);
+		sb.append("[SQL]" + sqlBuilder);
+		sb.append(" [Params]" + params);
 		return sb.toString();
 	}
 

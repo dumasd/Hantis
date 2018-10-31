@@ -14,17 +14,6 @@ public class ReflectionUtils {
 
 	private static Map<String, String> isterMethodNameMap = new ConcurrentHashMap<>();
 
-	public static Class<?> forName(String name) {
-		try {
-			return Thread.currentThread().getContextClassLoader().loadClass(name);
-		} catch (ClassNotFoundException e) {
-			try {
-				return Class.forName(name, true, Thread.currentThread().getContextClassLoader());
-			} catch (ClassNotFoundException e1) {
-				throw new RuntimeException(e1);
-			}
-		}
-	}
 
 	/**
 	 * Get method
@@ -40,21 +29,10 @@ public class ReflectionUtils {
 		if (propertyName == null || propertyName.length() == 0) {
 			throw new IllegalArgumentException("PropertyName is empty");
 		}
-		String getterName = getterMethodNameMap.get(propertyName);
-		String suffix = null;
-		if (getterName == null) {
-			suffix = getPropertySetOrGetSuffix(propertyName);
-			getterName = "get" + suffix;
-			getterMethodNameMap.put(propertyName, getterName);
-		}
+		String getterName = getPropertyGetterName(propertyName);
 		Method m = getMethod(clazz, getterName);
 		if (m == null) {
-			String isterName = isterMethodNameMap.get(propertyName);
-			if (isterName == null) {
-				suffix = suffix == null ? getPropertySetOrGetSuffix(propertyName) : suffix;
-				isterName = "is" + suffix;
-				isterMethodNameMap.put(propertyName, isterName);
-			}
+			String isterName = getPropertyIsterName(propertyName);
 			m = getMethod(clazz, isterName);
 		}
 		return m;
@@ -75,11 +53,7 @@ public class ReflectionUtils {
 		if (propertyName == null || propertyName.length() == 0) {
 			throw new IllegalArgumentException("PropertyName is empty");
 		}
-		String setterName = setterMethodNameMap.get(parameterTypes);
-		if (setterName == null) {
-			setterName = "set" + getPropertySetOrGetSuffix(propertyName);
-			setterMethodNameMap.put(propertyName, setterName);
-		}
+		String setterName = getPropertySetterName(propertyName);
 		return getMethod(clazz, setterName, parameterTypes);
 	}
 
@@ -96,7 +70,44 @@ public class ReflectionUtils {
 		char f = propertyName.charAt(0);
 		return Character.toUpperCase(f) + propertyName.substring(1, propertyName.length());
 	}
-
+	
+	public static String getPropertySetterName(String propertyName) {
+		if (propertyName == null || propertyName.length() == 0) {
+			throw new IllegalArgumentException("PropertyName is empty");
+		}
+		String name = setterMethodNameMap.get(propertyName);
+		if (name == null) {
+			name = "set" + getPropertySetOrGetSuffix(propertyName);
+			setterMethodNameMap.put(propertyName, name);
+		}
+		return name;
+	}
+	
+	public static String getPropertyIsterName(String propertyName) {
+		if (propertyName == null || propertyName.length() == 0) {
+			throw new IllegalArgumentException("PropertyName is empty");
+		}
+		String name = isterMethodNameMap.get(propertyName);
+		if (name == null) {
+			name = "is" + getPropertySetOrGetSuffix(propertyName);
+			isterMethodNameMap.put(propertyName, name);
+		}
+		return name;
+	}
+	
+	public static String getPropertyGetterName(String propertyName) {
+		if (propertyName == null || propertyName.length() == 0) {
+			throw new IllegalArgumentException("PropertyName is empty");
+		}
+		String name = getterMethodNameMap.get(propertyName);
+		if (name == null) {
+			name = "get" + getPropertySetOrGetSuffix(propertyName);
+			getterMethodNameMap.put(propertyName, name);
+		}
+		return name;
+	}
+	
+	
 	public static Method getMethod(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
 		if (clazz == null) {
 			throw new IllegalArgumentException("Class is null");
@@ -112,9 +123,13 @@ public class ReflectionUtils {
 		return null;
 	}
 
-	public static Object callMethod(Object target, Method method, Object... args)
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		return method.invoke(target, args);
+	public static Object callMethod(Object target, Method method, Object... args){
+		try {
+			return method.invoke(target, args);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
 	}
 
 	/**

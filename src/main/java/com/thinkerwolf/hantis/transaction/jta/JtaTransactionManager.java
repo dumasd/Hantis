@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis.transaction.jpa;
+package com.thinkerwolf.hantis.transaction.jta;
 
 import com.thinkerwolf.hantis.transaction.*;
 
