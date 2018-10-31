@@ -1,5 +1,5 @@
 <sqls namespace="tableBlog">
-	<select id="selectOne" resultType="com.thinkerwolf.hantis.Blog"
+	<select id="selectOne" resultType="com.thinkerwolf.hantis.example.Blog"
 		parameterType="map">
 		select * from blog
 		<where>

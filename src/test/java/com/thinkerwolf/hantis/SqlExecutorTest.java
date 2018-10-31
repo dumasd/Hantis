@@ -3,6 +3,7 @@ package com.thinkerwolf.hantis;
 import java.util.List;
 import java.util.Map;
 
+import com.thinkerwolf.hantis.example.Blog;
 import org.junit.Test;
 
 import com.thinkerwolf.hantis.common.JDBCType;

@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis;
+package com.thinkerwolf.hantis.example;
 
 public class Blog {
 
