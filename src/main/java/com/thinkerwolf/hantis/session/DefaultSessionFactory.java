@@ -11,7 +11,7 @@ public class DefaultSessionFactory implements SessionFactory {
 
     private SessionFactoryBuilder builder;
 
-    private DefaultSessionFactory(SessionFactoryBuilder builder) {
+    public DefaultSessionFactory(SessionFactoryBuilder builder) {
         this.transactionManager = builder.getTransactionManager();
         this.builder = builder;
     }

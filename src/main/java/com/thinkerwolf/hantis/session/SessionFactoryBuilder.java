@@ -57,7 +57,7 @@ public final class SessionFactoryBuilder {
 	 * 创建新的SessionFactory
 	 */
 	public SessionFactory build() {
-        SessionFactory sessionFactory = new DefaultSessionFactory();
+        SessionFactory sessionFactory = new DefaultSessionFactory(this);
 
 
 
