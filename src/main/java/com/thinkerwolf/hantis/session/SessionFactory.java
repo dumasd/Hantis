@@ -1,9 +1,10 @@
 package com.thinkerwolf.hantis.session;
 
-import javax.sql.DataSource;
-
 public interface SessionFactory {
 
-	
-	
+	Session openSession();
+
+	Session openSession(boolean autoCommit);
+
+
 }

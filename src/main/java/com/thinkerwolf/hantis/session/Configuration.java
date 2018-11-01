@@ -18,8 +18,6 @@ public class Configuration {
 	private Properties props = new Properties();
 
 	private XmlSqlNodeParser parser = new XmlSqlNodeParser();
-
-	private TransactionManager transactionManager;
 	
 	private Map<String, SessionFactoryBuilder> sessionFactoryBuilders = new ConcurrentHashMap<>();
 
@@ -35,12 +33,11 @@ public class Configuration {
 		return parser;
 	}
 
-	public TransactionManager getTransactionManager() {
-		return transactionManager;
+	public void putSessionFactoryBuilder(SessionFactoryBuilder builder) {
+		sessionFactoryBuilders.putIfAbsent(builder.getId(), builder);
 	}
 
-	public void setTransactionManager(TransactionManager transactionManager) {
-		this.transactionManager = transactionManager;
-	}
-
+    public Map<String, SessionFactoryBuilder> getSessionFactoryBuilders() {
+        return sessionFactoryBuilders;
+    }
 }

@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import com.thinkerwolf.hantis.sql.SqlNode;
+import com.thinkerwolf.hantis.transaction.TransactionManager;
 
 /**
  * 
@@ -16,8 +17,11 @@ public final class SessionFactoryBuilder {
 	private String id;
 	private DataSource dataSource;
 	private Map<String, SqlNode> sqlNodeMap;
+    private TransactionManager transactionManager;
 
-	public String getId() {
+
+
+    public String getId() {
 		return id;
 	}
 
@@ -41,12 +45,23 @@ public final class SessionFactoryBuilder {
 		this.sqlNodeMap = sqlNodeMap;
 	}
 
-	/**
+    public TransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
+    public void setTransactionManager(TransactionManager transactionManager) {
+        this.transactionManager = transactionManager;
+    }
+
+    /**
 	 * 创建新的SessionFactory
 	 */
 	public SessionFactory build() {
+        SessionFactory sessionFactory = new DefaultSessionFactory();
 
-		return null;
+
+
+		return sessionFactory;
 	}
 
 }

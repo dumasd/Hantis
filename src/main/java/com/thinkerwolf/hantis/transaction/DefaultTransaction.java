@@ -42,17 +42,17 @@ public class DefaultTransaction implements Transaction {
 
 	@Override
 	public void commit() throws SQLException {
-
+		transaction.commit();
 	}
 
 	@Override
 	public void rollback() throws SQLException {
-
+		transaction.rollback();
 	}
 
 	@Override
 	public void close() throws SQLException {
-
+		transaction.close();
 	}
 
 	@Override

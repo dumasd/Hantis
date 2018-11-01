@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +13,8 @@ import javax.sql.DataSource;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import com.thinkerwolf.hantis.transaction.TransactionManager;
+import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,6 +38,10 @@ public class XMLConfig {
 	private static final Pattern PLACE_HOLDER = Pattern.compile("\\$\\s*\\{.*\\}");
 	private static final Pattern PROP_NAME = Pattern.compile("[^\\$\\s\\{\\}]+");
 
+	private static final AtomicInteger sessionFacrotyId = new AtomicInteger();
+
+	private static final String DEFAULT_SESSION_FACTORY_ID_PREFFIX = "session-factory-";
+
 	private InputStream is;
 
 	private Configuration configuration;
@@ -49,9 +56,13 @@ public class XMLConfig {
 
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			factory.setNamespaceAware(false);
-			// factory.setValidating(true);
+			factory.setValidating(false);
 			DocumentBuilder db = factory.newDocumentBuilder();
 			Document doc = db.parse(is);
+			if (doc.getElementsByTagName("sessionFactories").getLength() == 0) {
+			    return;
+            }
+
 
 			// 解析props
 			NodeList propsNodeList = doc.getElementsByTagName("props");
@@ -68,6 +79,13 @@ public class XMLConfig {
 			}
 
 			// 解析transactionManager
+            NodeList tmNl = doc.getElementsByTagName("transactionManager");
+			if (tmNl.getLength() > 0) {
+                parseTransactionManager((Element) tmNl.item(0));
+            } else {
+			    //TODO 默认初始化JDBC
+
+            }
 
 		} catch (Exception e) {
 			throw new RuntimeException("Can't parse config, have a exception", e);
@@ -89,7 +107,9 @@ public class XMLConfig {
 
 	private SessionFactoryBuilder parseSessionFactory(Element el) {
 		String id = el.getAttribute("id");
-		// TODO generate id
+        if (StringUtils.isEmpty(id)) {
+            id = DEFAULT_SESSION_FACTORY_ID_PREFFIX + sessionFacrotyId.incrementAndGet();
+        }
 		SessionFactoryBuilder builder = new SessionFactoryBuilder();
 		Element dataSourceEl = (Element) el.getElementsByTagName("dataSource").item(0);
 		DataSource dataSource = parseDataSource(dataSourceEl);
@@ -100,6 +120,8 @@ public class XMLConfig {
 
 		builder.setId(id);
 		builder.setDataSource(dataSource);
+		builder.setSqlNodeMap(sqlNodeMap);
+        configuration.putSessionFactoryBuilder(builder);
 		return builder;
 	}
 
@@ -141,6 +163,8 @@ public class XMLConfig {
 		NodeList nl = el.getElementsByTagName("mapping");
 		for (int i = 0, len = nl.getLength(); i < len; i++) {
 			Element mappingEl = (Element) nl.item(i);
+
+			// resource 解析sql xml文件
 			String resource = mappingEl.getAttribute("resource");
 			Resource[] resources = Resources.getResources(resource);
 			for (Resource r : resources) {
@@ -152,6 +176,9 @@ public class XMLConfig {
 					}
 				}
 			}
+
+			//TODO scanpath 解析 orm注解
+
 		}
 	}
 
@@ -164,5 +191,27 @@ public class XMLConfig {
 		}
 		return originValue;
 	}
+
+	private void parseTransactionManager(Element el) {
+        String type = el.getAttribute("type");
+
+        if (StringUtils.isEmpty(type)) {
+            throw new RuntimeException("dataSource type is null");
+        }
+        // JDBC JTA
+        if ("JDBC".equalsIgnoreCase(type)) {
+            //transactionManager = new JdbcTransactionManager();
+            Map<String, SessionFactoryBuilder> builderMap = configuration.getSessionFactoryBuilders();
+            for (SessionFactoryBuilder builder : builderMap.values()) {
+                JdbcTransactionManager jdbcTransactionManager = new JdbcTransactionManager();
+                jdbcTransactionManager.setDataSource(builder.getDataSource());
+                builder.setTransactionManager(jdbcTransactionManager);
+            }
+        } if ("JTA".equalsIgnoreCase(type)) {
+            // TODO
+        }
+
+    }
+
 
 }
