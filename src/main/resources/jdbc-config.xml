@@ -20,7 +20,7 @@
 
 		<sessionFactory id="development1">
 			<!-- 事务管理器配置 -->
-			<dataSource type="">
+			<dataSource type="XAPOOL">
 				<property name="driver" value="${mysql.driver}" />
 				<property name="url" value="${mysql.url}" />
 				<property name="username" value="${mysql.username}" />
@@ -28,20 +28,11 @@
 			</dataSource>
 			<mappings>
 				<!-- 单个mapping -->
-				<mapping resource="file://"/>
-				<mapping resource="classpath://" />
-				
+				<mapping resource="classpath:sqls/*.xml" />
+				<mapping />
 			</mappings>
 		</sessionFactory>
 
-		<sessionFactory id="development2">
-			<dataSource type="">
-				<property name="driver" value="${mysql.driver}" />
-				<property name="url" value="${mysql.url}" />
-				<property name="username" value="${mysql.username}" />
-				<property name="password" value="${mysql.password}" />
-			</dataSource>
-		</sessionFactory>
 	</sessionFactories>
 
 </configuration>

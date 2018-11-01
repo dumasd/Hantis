@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.conf.xml;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.thinkerwolf.hantis.common.io.Resource;
+import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.common.util.ClassUtils;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.common.util.StringUtils;
@@ -139,14 +142,23 @@ public class XMLConfig {
 		for (int i = 0, len = nl.getLength(); i < len; i++) {
 			Element mappingEl = (Element) nl.item(i);
 			String resource = mappingEl.getAttribute("resource");
-			
+			Resource[] resources = Resources.getResources(resource);
+			for (Resource r : resources) {
+				if (r.getPath().endsWith(".xml")) {
+					try {
+						sqlNodeMap.putAll(configuration.getParser().parse(r.getInputStream()));
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				}
+			}
 		}
-
 	}
 
 	private String getPropertyValue(String originValue) {
 		if (PLACE_HOLDER.matcher(originValue).find()) {
 			Matcher m = PROP_NAME.matcher(originValue);
+			m.find();
 			String propName = m.group().trim();
 			originValue = configuration.getProps().getProperty(propName);
 		}

@@ -1,6 +1,6 @@
 <mapping namespace="tableBlog">
 	<select id="selectOne" resultType="com.thinkerwolf.hantis.example.Blog"
-		parameterType="map">
+		parameterType="java.util.Map">
 		select * from blog
 		<where>
 			<if test="id != null">
@@ -15,13 +15,13 @@
 		</where>
 	</select>
 
-	<update id="updateOne" parameterType="map">
+	<update id="updateOne" parameterType="java.util.Map">
 		update blog set title =
 		#{title}, content = #{content}
 		where id = #{id}
 	</update>
 
-	<update id="insertOne" parameterType="map">
+	<update id="insertOne" parameterType="java.util.Map">
 		insert into blog (id, title,
 		content) values (#{id}, # {title}, #{ content })
 	</update>
