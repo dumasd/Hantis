@@ -1,5 +1,13 @@
 package com.thinkerwolf.hantis.common.util;
 
+import java.io.File;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import com.thinkerwolf.hantis.common.io.Resources;
+
 public class ClassUtils {
 
 	public static ClassLoader getDefaultClassLoader() {
@@ -51,4 +59,28 @@ public class ClassUtils {
 			}
 		}
 	}
+
+	/**
+	 * 扫描Class文件
+	 * 
+	 * @param basePackage
+	 *            包名，可以包含通配符
+	 * @return
+	 */
+	public static Set<Class<?>> scanClasses(String basePackage) {
+		basePackage = basePackage.replaceAll("\\.", "/").replace(File.separatorChar, '/');
+		String rootDir = Resources.getRootDir(basePackage);
+		Pattern p = Pattern.compile(basePackage.replaceAll("\\*", ".*"));
+		Set<String> set = ResourceUtils.findClasspathFilePaths(rootDir, "class");
+		Set<Class<?>> result = new HashSet<>();
+		for (Iterator<String> iter = set.iterator(); iter.hasNext();) {
+			String s = iter.next();
+			if (p.matcher(s).matches()) {
+				String classname = s.replaceAll("/", ".").replaceAll(".class", "");
+				result.add(forName(classname));
+			}
+		}
+		return result;
+	}
+
 }

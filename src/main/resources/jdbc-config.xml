@@ -28,8 +28,9 @@
 			</dataSource>
 			<mappings>
 				<!-- 单个mapping -->
-				<mapping resource="file://" />
+				<mapping resource="file://"/>
 				<mapping resource="classpath://" />
+				
 			</mappings>
 		</sessionFactory>
 

@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class FileSystemResource extends AbstractResource {
-
-	private String path;
+	
+	//private String path;
 
 	private File file;
 
@@ -31,7 +31,7 @@ public class FileSystemResource extends AbstractResource {
 
 	@Override
 	public String getPath() {
-		return path;
+		return file.getAbsolutePath();
 	}
 
 }

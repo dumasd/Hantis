@@ -16,12 +16,16 @@ public class ClassPathResource extends AbstractResource {
 	public ClassPathResource(String path) {
 		this(path, (ClassLoader) null);
 	}
-
+	
 	public ClassPathResource(String path, ClassLoader classLoader) {
 		this.path = path;
-		this.classLoader = ClassUtils.getDefaultClassLoader();
+		if (classLoader != null) {
+			this.classLoader = classLoader;
+		} else {
+			this.classLoader = ClassUtils.getDefaultClassLoader();
+		}
 		if (this.classLoader != null) {
-			this.url = classLoader.getResource(path);
+			this.url = this.classLoader.getResource(path);
 		} else {
 			this.url = ClassLoader.getSystemResource(path);
 		}
