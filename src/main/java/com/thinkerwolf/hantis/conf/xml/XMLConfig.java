@@ -213,5 +213,7 @@ public class XMLConfig {
 
     }
 
-
+    public Configuration getConfiguration() {
+        return configuration;
+    }
 }

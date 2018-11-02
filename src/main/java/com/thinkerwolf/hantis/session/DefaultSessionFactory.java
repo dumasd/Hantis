@@ -4,12 +4,16 @@ import com.thinkerwolf.hantis.transaction.DefaultTransactionDefinition;
 import com.thinkerwolf.hantis.transaction.Transaction;
 import com.thinkerwolf.hantis.transaction.TransactionManager;
 
+import javax.sql.DataSource;
+
 public class DefaultSessionFactory implements SessionFactory {
 
 
     private TransactionManager transactionManager;
 
     private SessionFactoryBuilder builder;
+
+
 
     public DefaultSessionFactory(SessionFactoryBuilder builder) {
         this.transactionManager = builder.getTransactionManager();
@@ -19,7 +23,7 @@ public class DefaultSessionFactory implements SessionFactory {
     @Override
     public Session openSession() {
         Transaction transaction = transactionManager.getTransaction(new DefaultTransactionDefinition());
-        DefaultSession session = new DefaultSession();
+        DefaultSession session = new DefaultSession(transaction, builder);
         return session;
     }
 
@@ -27,4 +31,6 @@ public class DefaultSessionFactory implements SessionFactory {
     public Session openSession(boolean autoCommit) {
         return null;
     }
+
+
 }

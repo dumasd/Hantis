@@ -4,16 +4,16 @@
 		<property name="mysql.url"
 			value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
 		<property name="mysql.username" value="root" />
-		<property name="mysql.password" value="123" />
+		<property name="mysql.password" value="1234" />
 	</props>
 
 	<sessionFactories>
-		<transactionManager type="JTA">
+		<transactionManager type="JDBC">
 			<property name="sessionFactories" value="development1,development2"/>
 		</transactionManager>
 
 		<sessionFactory id="development1">
-			<dataSource type="XAPOOL">
+			<dataSource type="POOL">
 				<property name="driver" value="${mysql.driver}" />
 				<property name="url" value="${mysql.url}" />
 				<property name="username" value="${mysql.username}" />

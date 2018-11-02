@@ -1,5 +1,5 @@
 <mapping namespace="tableBlog">
-	<select id="selectOne" resultType="com.thinkerwolf.hantis.example.Blog"
+	<select id="selectOne" returnType="com.thinkerwolf.hantis.example.Blog"
 		parameterType="java.util.Map">
 		select * from blog
 		<where>

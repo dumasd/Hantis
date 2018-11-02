@@ -4,7 +4,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import com.thinkerwolf.hantis.sql.SelectSqlNode;
 import com.thinkerwolf.hantis.sql.SqlNode;
+import com.thinkerwolf.hantis.sql.UpdateSqlNode;
 import com.thinkerwolf.hantis.transaction.TransactionManager;
 
 /**
@@ -52,6 +54,29 @@ public final class SessionFactoryBuilder {
     public void setTransactionManager(TransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }
+
+    public SelectSqlNode getSelectSqlNode(String mapping) {
+        SqlNode sqlNode = sqlNodeMap.get(mapping);
+        if (sqlNode == null) {
+            throw new RuntimeException("[" + mapping + "] isn't found");
+        }
+        if (!(sqlNode instanceof SelectSqlNode)) {
+            throw new RuntimeException("[" + mapping + "] isn't a select sql node");
+        }
+        return (SelectSqlNode) sqlNode;
+    }
+
+    public UpdateSqlNode getUpdateSqlNode(String mapping) {
+        SqlNode sqlNode = sqlNodeMap.get(mapping);
+        if (sqlNode == null) {
+            throw new RuntimeException("[" + mapping + "] isn't found");
+        }
+        if (!(sqlNode instanceof UpdateSqlNode)) {
+            throw new RuntimeException("[" + mapping + "] isn't a select sql node");
+        }
+        return (UpdateSqlNode) sqlNode;
+    }
+
 
     /**
 	 * 创建新的SessionFactory

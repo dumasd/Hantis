@@ -1,11 +1,16 @@
 package com.thinkerwolf.hantis.sql;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.Params;
 
 public class Sql {
+
+	private static final Map<String, Object> EMPTY_PARAMETER = new HashMap<>();
+
 	/**
 	 * 原始参数
 	 */
@@ -18,7 +23,11 @@ public class Sql {
 	
 	
 	public Sql(Object inputParameter) {
-		this.inputParameter = inputParameter;
+		if (inputParameter == null) {
+			this.inputParameter = EMPTY_PARAMETER;
+		} else {
+			this.inputParameter = inputParameter;
+		}
 	}
 	
 	public String getSql() {
