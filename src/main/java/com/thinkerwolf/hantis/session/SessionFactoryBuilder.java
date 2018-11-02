@@ -19,11 +19,10 @@ public final class SessionFactoryBuilder {
 	private String id;
 	private DataSource dataSource;
 	private Map<String, SqlNode> sqlNodeMap;
-    private TransactionManager transactionManager;
+	private TransactionManager transactionManager;
+	private Configuration configuration;
 
-
-
-    public String getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -47,45 +46,49 @@ public final class SessionFactoryBuilder {
 		this.sqlNodeMap = sqlNodeMap;
 	}
 
-    public TransactionManager getTransactionManager() {
-        return transactionManager;
-    }
+	public TransactionManager getTransactionManager() {
+		return transactionManager;
+	}
 
-    public void setTransactionManager(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
-    }
+	public void setTransactionManager(TransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
 
-    public SelectSqlNode getSelectSqlNode(String mapping) {
-        SqlNode sqlNode = sqlNodeMap.get(mapping);
-        if (sqlNode == null) {
-            throw new RuntimeException("[" + mapping + "] isn't found");
-        }
-        if (!(sqlNode instanceof SelectSqlNode)) {
-            throw new RuntimeException("[" + mapping + "] isn't a select sql node");
-        }
-        return (SelectSqlNode) sqlNode;
-    }
+	public Configuration getConfiguration() {
+		return configuration;
+	}
 
-    public UpdateSqlNode getUpdateSqlNode(String mapping) {
-        SqlNode sqlNode = sqlNodeMap.get(mapping);
-        if (sqlNode == null) {
-            throw new RuntimeException("[" + mapping + "] isn't found");
-        }
-        if (!(sqlNode instanceof UpdateSqlNode)) {
-            throw new RuntimeException("[" + mapping + "] isn't a select sql node");
-        }
-        return (UpdateSqlNode) sqlNode;
-    }
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
 
+	public SelectSqlNode getSelectSqlNode(String mapping) {
+		SqlNode sqlNode = sqlNodeMap.get(mapping);
+		if (sqlNode == null) {
+			throw new RuntimeException("[" + mapping + "] isn't found");
+		}
+		if (!(sqlNode instanceof SelectSqlNode)) {
+			throw new RuntimeException("[" + mapping + "] isn't a select sql node");
+		}
+		return (SelectSqlNode) sqlNode;
+	}
 
-    /**
+	public UpdateSqlNode getUpdateSqlNode(String mapping) {
+		SqlNode sqlNode = sqlNodeMap.get(mapping);
+		if (sqlNode == null) {
+			throw new RuntimeException("[" + mapping + "] isn't found");
+		}
+		if (!(sqlNode instanceof UpdateSqlNode)) {
+			throw new RuntimeException("[" + mapping + "] isn't a select sql node");
+		}
+		return (UpdateSqlNode) sqlNode;
+	}
+
+	/**
 	 * 创建新的SessionFactory
 	 */
 	public SessionFactory build() {
-        SessionFactory sessionFactory = new DefaultSessionFactory(this);
-
-
-
+		SessionFactory sessionFactory = new DefaultSessionFactory(this);
 		return sessionFactory;
 	}
 

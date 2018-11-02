@@ -26,6 +26,7 @@ public class DefaultSession implements Session {
         this.dataSource = builder.getDataSource();
         this.executor = new SqlExecutor();
         this.executor.setDataSource(dataSource);
+        this.executor.setConfiguration(builder.getConfiguration());
     }
 
     @Override

@@ -20,7 +20,7 @@ public class Sql {
 	
 	private List<Param> params = new Params();
 	
-	
+	//private Configuration configuration;
 	
 	public Sql(Object inputParameter) {
 		if (inputParameter == null) {
@@ -53,6 +53,14 @@ public class Sql {
 	public Object getInputParameter() {
 		return inputParameter;
 	}
+
+//	public Configuration getConfiguration() {
+//		return configuration;
+//	}
+//
+//	public void setConfiguration(Configuration configuration) {
+//		this.configuration = configuration;
+//	}
 
 	@Override
 	public String toString() {

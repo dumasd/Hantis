@@ -1,5 +1,7 @@
 package com.thinkerwolf.hantis.common;
 
+import com.thinkerwolf.hantis.common.type.JDBCType;
+
 public final class Param {
 
 	private JDBCType type;
@@ -12,7 +14,7 @@ public final class Param {
 	}
 
 	public Param(Object value) {
-		this.type = JDBCType.JAVA_OBJECT;
+		this.type = JDBCType.UNKONWN;
 		this.value = value;
 	}
 

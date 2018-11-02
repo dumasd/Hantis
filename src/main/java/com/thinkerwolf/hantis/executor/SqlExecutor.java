@@ -15,7 +15,10 @@ import javax.sql.DataSource;
 import com.thinkerwolf.hantis.common.DefaultNameHandler;
 import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
+import com.thinkerwolf.hantis.common.type.JDBCType;
+import com.thinkerwolf.hantis.common.type.TypeHandler;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
+import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
 import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager.JdbcResourceHolder;
 
@@ -30,6 +33,8 @@ public class SqlExecutor {
 	private DataSource dataSource;
 
 	private NameHandler nameHandler = new DefaultNameHandler();
+
+	private Configuration configuration;
 
 	public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
 		RowHandler<T> rowHandler = new ClassRowHander<>(clazz, nameHandler);
@@ -46,7 +51,14 @@ public class SqlExecutor {
 				try {
 					PreparedStatement ps = builder.build(getConnection(), sql);
 					for (int i = 0; i < params.size(); i++) {
-						ps.setObject(i + 1, params.get(i).getValue(), params.get(i).getType().getType());
+						Param param = params.get(i);
+						TypeHandler<?> handler;
+						if (param.getType() != JDBCType.UNKONWN) {
+							handler = configuration.getTypeHandlerRegistry().getHandler(param.getType());
+						} else {
+							handler = configuration.getTypeHandlerRegistry().getHandler(param.getValue().getClass());
+						}
+						handler.setParameter(ps, i + 1, param.getValue(), param.getType());
 					}
 					ResultSet rs = ps.executeQuery();
 					return listHandler.process(rs);
@@ -88,7 +100,14 @@ public class SqlExecutor {
 				try {
 					PreparedStatement ps = builder.build(getConnection(), sql);
 					for (int i = 0; i < params.size(); i++) {
-						ps.setObject(i + 1, params.get(i).getValue(), params.get(i).getType().getType());
+						Param param = params.get(i);
+						TypeHandler<?> handler;
+						if (param.getType() != JDBCType.UNKONWN) {
+							handler = configuration.getTypeHandlerRegistry().getHandler(param.getType());
+						} else {
+							handler = configuration.getTypeHandlerRegistry().getHandler(param.getValue().getClass());
+						}
+						handler.setParameter(ps, i + 1, param.getValue(), param.getType());
 					}
 					ResultSet rs = ps.executeQuery();
 					return listHandler.process(rs);
@@ -170,6 +189,14 @@ public class SqlExecutor {
 
 	public void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
+	}
+
+	public Configuration getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
 	}
 
 	private static class ClassRowHander<T> implements RowHandler<T> {

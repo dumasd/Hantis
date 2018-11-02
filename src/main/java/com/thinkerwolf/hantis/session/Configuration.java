@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.thinkerwolf.hantis.common.type.TypeHandlerRegistry;
 import com.thinkerwolf.hantis.sql.xml.XmlSqlNodeParser;
-import com.thinkerwolf.hantis.transaction.TransactionManager;
 
 /**
  * Project configuration
@@ -18,8 +18,10 @@ public class Configuration {
 	private Properties props = new Properties();
 
 	private XmlSqlNodeParser parser = new XmlSqlNodeParser();
-	
+
 	private Map<String, SessionFactoryBuilder> sessionFactoryBuilders = new ConcurrentHashMap<>();
+
+	private TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
 
 	public Properties getProps() {
 		return props;
@@ -37,7 +39,12 @@ public class Configuration {
 		sessionFactoryBuilders.putIfAbsent(builder.getId(), builder);
 	}
 
-    public Map<String, SessionFactoryBuilder> getSessionFactoryBuilders() {
-        return sessionFactoryBuilders;
-    }
+	public Map<String, SessionFactoryBuilder> getSessionFactoryBuilders() {
+		return sessionFactoryBuilders;
+	}
+
+	public TypeHandlerRegistry getTypeHandlerRegistry() {
+		return typeHandlerRegistry;
+	}
+	
 }

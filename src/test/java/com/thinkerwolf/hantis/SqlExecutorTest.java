@@ -6,8 +6,8 @@ import java.util.Map;
 import com.thinkerwolf.hantis.example.Blog;
 import org.junit.Test;
 
-import com.thinkerwolf.hantis.common.JDBCType;
 import com.thinkerwolf.hantis.common.Params;
+import com.thinkerwolf.hantis.common.type.JDBCType;
 import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
 import com.thinkerwolf.hantis.executor.SqlExecutor;
 
@@ -19,7 +19,7 @@ public class SqlExecutorTest {
 		ds.setDriver("com.mysql.cj.jdbc.Driver");
 		ds.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC");
 		ds.setUsername("root");
-		ds.setPassword("1234");
+		ds.setPassword("123");
 		ds.setMaxConn(100);
 		ds.setMinConn(2);
 		

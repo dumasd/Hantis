@@ -96,6 +96,9 @@ public class UtilsTest {
 		System.out.println(Arrays.toString(Resources.getResources("src/main/resources/*")));
 
 		System.out.println(Arrays.toString(Resources.getResources("classpath:*.xml")));
+		
+		System.out.println(int[].class.getName());
+		System.out.println(String.class.getComponentType().getName());
 		// System.out.println(Arrays.toString(Resources.getResources("https://read.douban.com/")));
 	}
 

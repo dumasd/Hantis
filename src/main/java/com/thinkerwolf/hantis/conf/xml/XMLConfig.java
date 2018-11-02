@@ -121,6 +121,7 @@ public class XMLConfig {
 		builder.setId(id);
 		builder.setDataSource(dataSource);
 		builder.setSqlNodeMap(sqlNodeMap);
+		builder.setConfiguration(configuration);
         configuration.putSessionFactoryBuilder(builder);
 		return builder;
 	}

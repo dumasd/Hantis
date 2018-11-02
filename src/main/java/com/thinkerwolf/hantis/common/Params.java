@@ -2,6 +2,8 @@ package com.thinkerwolf.hantis.common;
 
 import java.util.ArrayList;
 
+import com.thinkerwolf.hantis.common.type.JDBCType;
+
 public final class Params extends ArrayList<Param> {
 
 	public static final Params EMPTY_PARAMS = new Params();

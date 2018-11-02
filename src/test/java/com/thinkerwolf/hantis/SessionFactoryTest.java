@@ -24,7 +24,7 @@ public class SessionFactoryTest {
         SessionFactoryBuilder sfb = xmlConfig.getConfiguration().getSessionFactoryBuilders().get("development1");
         SessionFactory sf = sfb.build();
         Session session = sf.openSession();
-
+        
         try {
             Map<String, Object> p = new HashMap<>();
             p.put("id", 3);

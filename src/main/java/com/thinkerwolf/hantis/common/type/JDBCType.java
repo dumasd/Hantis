@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis.common;
+package com.thinkerwolf.hantis.common.type;
 
 import java.sql.Types;
 
@@ -152,6 +152,8 @@ public enum JDBCType {
 	 * Identifies the generic SQL type {@code SQLXML}.
 	 */
 	SQLXML(Types.SQLXML),
+	
+	UNKONWN(9999),
 
 	;
 	private Integer type;
@@ -171,5 +173,15 @@ public enum JDBCType {
 		}
 		throw new IllegalArgumentException("Type:" + type + " is not a valid " + "Types.java value.");
 	}
+	
+	public static JDBCType getJDBCType(Class<?> classType) {
+		JDBCType type = JDBCType.JAVA_OBJECT;
+		
+		
+		
+		return type;
+	}
+	
+	
 
 }
