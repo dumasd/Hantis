@@ -4,12 +4,11 @@ import java.sql.ResultSet;
 
 /**
  * 返回结果行处理器
- * 
- * @author wukai
  *
+ * @author wukai
  */
 public interface RowHandler<T> {
-	
-	T processRow(ResultSet rs) throws Throwable;
-	
+
+    T processRow(ResultSet rs) throws Throwable;
+
 }

@@ -150,7 +150,7 @@
     <logger name="org.apache.ibatis" level="INFO" additivity="false"/>
     <logger name="org.mybatis.spring" level="INFO" additivity="false"/>
     <logger name="com.github.miemiedev.mybatis.paginator" level="INFO" additivity="false"/>
-	
+
     <logger name="com.freda.myspecial" level="INFO" additivity="false">
         <appender-ref ref="myspecial"/>
     </logger>

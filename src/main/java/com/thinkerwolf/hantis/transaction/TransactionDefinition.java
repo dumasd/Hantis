@@ -2,17 +2,16 @@ package com.thinkerwolf.hantis.transaction;
 
 /**
  * 事务定义
- * 
- * @author wukai
  *
+ * @author wukai
  */
 public interface TransactionDefinition {
 
-	TransactionIsolationLevel getIsolationLevel();
+    TransactionIsolationLevel getIsolationLevel();
 
-	TransactionPropagationBehavior getPropagationBehavior();
-	
-	Transaction newTransaction();
-	
-	
+    TransactionPropagationBehavior getPropagationBehavior();
+
+    Transaction newTransaction();
+
+
 }

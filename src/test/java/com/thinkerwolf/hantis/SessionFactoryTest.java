@@ -24,20 +24,25 @@ public class SessionFactoryTest {
         SessionFactoryBuilder sfb = xmlConfig.getConfiguration().getSessionFactoryBuilders().get("development1");
         SessionFactory sf = sfb.build();
         Session session = sf.openSession();
-        
+
         try {
             Map<String, Object> p = new HashMap<>();
             p.put("id", 3);
-            List<Blog> list =  session.selectList("tableBlog.selectOne", p);
+            List<Blog> list = session.selectList("tableBlog.selectOne", p);
             System.out.println(list);
 
+            p.put("id", 7);
+            p.put("title", "hantis");
+            p.put("content", "hantis update");
+            int num = session.update("tableBlog.updateOne", p);
+            System.out.println(num);
+            session.commit();
         } finally {
             session.close();
         }
 
 
     }
-
 
 
 }

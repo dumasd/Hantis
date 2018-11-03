@@ -1,29 +1,29 @@
 <configuration>
-	<props>
-		<property name="mysql.driver" value="com.mysql.cj.jdbc.Driver" />
-		<property name="mysql.url"
-			value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
-		<property name="mysql.username" value="root" />
-		<property name="mysql.password" value="123" />
-	</props>
+    <props>
+        <property name="mysql.driver" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="mysql.url"
+                  value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC"/>
+        <property name="mysql.username" value="root"/>
+        <property name="mysql.password" value="123"/>
+    </props>
 
-	<sessionFactories>
-		<transactionManager type="JTA">
-			<property name="sessionFactories" value="development1,development2"/>
-		</transactionManager>
+    <sessionFactories>
+        <transactionManager type="JTA">
+            <property name="sessionFactories" value="development1,development2"/>
+        </transactionManager>
 
-		<sessionFactory id="development1">
-			<dataSource type="XAPOOL">
-				<property name="driver" value="${mysql.driver}" />
-				<property name="url" value="${mysql.url}" />
-				<property name="username" value="${mysql.username}" />
-				<property name="password" value="${mysql.password}" />
-			</dataSource>
-			<mappings>
-				<mapping resource="classpath:sqls/BlogSqls.xml" />
-			</mappings>
-		</sessionFactory>
+        <sessionFactory id="development1">
+            <dataSource type="XAPOOL">
+                <property name="driver" value="${mysql.driver}"/>
+                <property name="url" value="${mysql.url}"/>
+                <property name="username" value="${mysql.username}"/>
+                <property name="password" value="${mysql.password}"/>
+            </dataSource>
+            <mappings>
+                <mapping resource="classpath:sqls/BlogSqls.xml"/>
+            </mappings>
+        </sessionFactory>
 
-	</sessionFactories>
+    </sessionFactories>
 
 </configuration>

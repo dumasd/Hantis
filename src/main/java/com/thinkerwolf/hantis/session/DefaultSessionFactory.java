@@ -4,15 +4,12 @@ import com.thinkerwolf.hantis.transaction.DefaultTransactionDefinition;
 import com.thinkerwolf.hantis.transaction.Transaction;
 import com.thinkerwolf.hantis.transaction.TransactionManager;
 
-import javax.sql.DataSource;
-
 public class DefaultSessionFactory implements SessionFactory {
 
 
     private TransactionManager transactionManager;
 
     private SessionFactoryBuilder builder;
-
 
 
     public DefaultSessionFactory(SessionFactoryBuilder builder) {

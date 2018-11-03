@@ -7,25 +7,25 @@ import java.util.Map;
 
 public class ClassMetaData {
 
-	private Map<String, Field> fieldMap = new HashMap<>();
+    private Map<String, Field> fieldMap = new HashMap<>();
 
-	private Map<String, Method> methodMap = new HashMap<>();
+    private Map<String, Method> methodMap = new HashMap<>();
 
-	public ClassMetaData(Class<?> clazz) {
-		for (Field field : clazz.getFields()) {
-			fieldMap.put(field.getName(), field);
-		}
-		for (Method method : clazz.getMethods()) {
-			methodMap.put(method.getName(), method);
-		}
-	}
+    public ClassMetaData(Class<?> clazz) {
+        for (Field field : clazz.getFields()) {
+            fieldMap.put(field.getName(), field);
+        }
+        for (Method method : clazz.getMethods()) {
+            methodMap.put(method.getName(), method);
+        }
+    }
 
-	public Method getMethod(String name) {
-		return methodMap.get(name);
-	}
+    public Method getMethod(String name) {
+        return methodMap.get(name);
+    }
 
-	public Field getField(String name) {
-		return fieldMap.get(name);
-	}
+    public Field getField(String name) {
+        return fieldMap.get(name);
+    }
 
 }

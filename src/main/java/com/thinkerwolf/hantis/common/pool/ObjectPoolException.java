@@ -2,25 +2,25 @@ package com.thinkerwolf.hantis.common.pool;
 
 public class ObjectPoolException extends RuntimeException {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public ObjectPoolException() {
-		super();
-	}
+    public ObjectPoolException() {
+        super();
+    }
 
-	public ObjectPoolException(String paramString, Throwable paramThrowable) {
-		super(paramString, paramThrowable);
-	}
+    public ObjectPoolException(String paramString, Throwable paramThrowable) {
+        super(paramString, paramThrowable);
+    }
 
-	public ObjectPoolException(String paramString) {
-		super(paramString);
-	}
+    public ObjectPoolException(String paramString) {
+        super(paramString);
+    }
 
-	public ObjectPoolException(Throwable paramThrowable) {
-		super(paramThrowable);
-	}
+    public ObjectPoolException(Throwable paramThrowable) {
+        super(paramThrowable);
+    }
 
 }

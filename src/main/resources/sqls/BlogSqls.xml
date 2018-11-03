@@ -1,29 +1,29 @@
 <mapping namespace="tableBlog">
-	<select id="selectOne" returnType="com.thinkerwolf.hantis.example.Blog"
-		parameterType="java.util.Map">
-		select * from blog
-		<where>
-			<if test="id != null">
-				id = # { id }
-			</if>
-			<if test="title != null">
-				title = # { title }
-			</if>
-			<if test="content != null">
-				content = #{content}
-			</if>
-		</where>
-	</select>
+    <select id="selectOne" returnType="com.thinkerwolf.hantis.example.Blog"
+            parameterType="java.util.Map">
+        select * from blog
+        <where>
+            <if test="id != null">
+                id = # { id }
+            </if>
+            <if test="title != null">
+                title = # { title }
+            </if>
+            <if test="content != null">
+                content = #{content}
+            </if>
+        </where>
+    </select>
 
-	<update id="updateOne" parameterType="java.util.Map">
-		update blog set title =
-		#{title}, content = #{content}
-		where id = #{id}
-	</update>
+    <update id="updateOne" parameterType="java.util.Map">
+        update blog set title =
+        #{title}, content = #{content}
+        where id = #{id}
+    </update>
 
-	<update id="insertOne" parameterType="java.util.Map">
-		insert into blog (id, title,
-		content) values (#{id}, # {title}, #{ content })
-	</update>
-	
+    <update id="insertOne" parameterType="java.util.Map">
+        insert into blog (id, title,
+        content) values (#{id}, # {title}, #{ content })
+    </update>
+
 </mapping>

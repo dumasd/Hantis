@@ -6,20 +6,19 @@ import java.sql.SQLException;
 
 /**
  * 无缓存数据源
- * 
- * @author wukai
  *
+ * @author wukai
  */
 public class DBUnpoolDataSource extends AbstractJdbcDataSource {
 
-	@Override
-	protected Connection doGetConnection() throws SQLException {
-		return DriverManager.getConnection(url, username, password);
-	}
+    @Override
+    protected Connection doGetConnection() throws SQLException {
+        return DriverManager.getConnection(url, username, password);
+    }
 
-	@Override
-	protected Connection doGetConnection(String username, String password) throws SQLException {
-		return DriverManager.getConnection(url, username, password);
-	}
+    @Override
+    protected Connection doGetConnection(String username, String password) throws SQLException {
+        return DriverManager.getConnection(url, username, password);
+    }
 
 }

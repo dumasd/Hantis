@@ -1,12 +1,11 @@
 package com.thinkerwolf.hantis.sql.xml;
 
+import com.thinkerwolf.hantis.sql.SqlNode;
 import org.w3c.dom.Node;
 
-import com.thinkerwolf.hantis.sql.SqlNode;
-
 public interface NodeHandler {
-	
-	
-	SqlNode parse(Node el); 
-	
+
+
+    SqlNode parse(Node el);
+
 }

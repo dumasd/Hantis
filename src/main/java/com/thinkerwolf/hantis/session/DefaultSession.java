@@ -3,6 +3,7 @@ package com.thinkerwolf.hantis.session;
 import com.thinkerwolf.hantis.executor.SqlExecutor;
 import com.thinkerwolf.hantis.sql.SelectSqlNode;
 import com.thinkerwolf.hantis.sql.Sql;
+import com.thinkerwolf.hantis.sql.UpdateSqlNode;
 import com.thinkerwolf.hantis.transaction.Transaction;
 
 import javax.sql.DataSource;
@@ -75,12 +76,20 @@ public class DefaultSession implements Session {
 
     @Override
     public <T> T selectOne(String mapping, Object parameter) {
-        return null;
+        SelectSqlNode ssn = builder.getSelectSqlNode(mapping);
+        Sql sql = new Sql(parameter);
+        try {
+            ssn.generate(sql);
+        } catch (Throwable throwable) {
+            return null;
+        }
+        return (T) executor.queryForOne(sql.getSql(), sql.getParams(), ssn.getReturnType());
     }
+
 
     @Override
     public <T> T selectOne(String mapping) {
-        return null;
+        return selectOne(mapping, null);
     }
 
     @Override
@@ -95,11 +104,20 @@ public class DefaultSession implements Session {
 
     @Override
     public int update(String mapping, Object parameter) {
-        return 0;
+        UpdateSqlNode usn = builder.getUpdateSqlNode(mapping);
+        Sql sql = new Sql(parameter);
+        try {
+            usn.generate(sql);
+        } catch (Throwable throwable) {
+            return 0;
+        }
+        return executor.update(sql.getSql(), sql.getParams());
     }
 
     @Override
     public int update(String mapping) {
-        return 0;
+        return update(mapping, null);
     }
+
+
 }

@@ -5,20 +5,19 @@ import java.io.InputStream;
 
 /**
  * <pre>
- * class path 
+ * class path
  * file path
  * url path
  * </pre>
- * 
- * @author wukai
  *
+ * @author wukai
  */
 public interface Resource {
 
-	boolean exists();
+    boolean exists();
 
-	InputStream getInputStream() throws IOException;
+    InputStream getInputStream() throws IOException;
 
-	String getPath();
-	
+    String getPath();
+
 }
