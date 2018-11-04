@@ -20,7 +20,7 @@ public abstract class AbstractNodeHandler implements NodeHandler {
             if (node.getNodeType() == Node.TEXT_NODE) {
                 if (!SqlNode.EMPTY_TEXT.matcher(node.getTextContent()).matches()) {
                     TextSqlNode tsNode = new TextSqlNode(
-                            node.getTextContent().replaceAll(SqlNode.TRIM.pattern(), ""));
+                            node.getTextContent().replaceAll(SqlNode.TRIM.pattern(), "").trim());
                     children.add(tsNode);
                 }
             } else if (node.getNodeType() == Node.ELEMENT_NODE) {

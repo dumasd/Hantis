@@ -11,7 +11,6 @@ public interface TransactionDefinition {
 
     TransactionPropagationBehavior getPropagationBehavior();
 
-    Transaction newTransaction();
-
+    boolean isAutoCommit();
 
 }

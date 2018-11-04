@@ -1,12 +1,11 @@
 package com.thinkerwolf.hantis.session;
 
-import com.thinkerwolf.hantis.executor.SqlExecutor;
-import com.thinkerwolf.hantis.sql.SelectSqlNode;
+import com.thinkerwolf.hantis.executor.Executor;
 import com.thinkerwolf.hantis.sql.Sql;
-import com.thinkerwolf.hantis.sql.UpdateSqlNode;
+import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.transaction.Transaction;
 
-import javax.sql.DataSource;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -15,23 +14,21 @@ public class DefaultSession implements Session {
 
     private Transaction transaction;
 
-    private DataSource dataSource;
+    // private DataSource dataSource;
 
-    private SqlExecutor executor;
+    private Executor executor;
 
     private SessionFactoryBuilder builder;
 
     public DefaultSession(Transaction transaction, SessionFactoryBuilder builder) {
         this.transaction = transaction;
         this.builder = builder;
-        this.dataSource = builder.getDataSource();
-        this.executor = new SqlExecutor();
-        this.executor.setDataSource(dataSource);
-        this.executor.setConfiguration(builder.getConfiguration());
+        //this.dataSource = builder.getDataSource();
+        this.executor = builder.getExecutor();
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         try {
             transaction.close();
         } catch (SQLException e) {
@@ -42,6 +39,7 @@ public class DefaultSession implements Session {
     @Override
     public void commit() {
         try {
+            executor.doBeforeCommit();
             transaction.commit();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -51,6 +49,7 @@ public class DefaultSession implements Session {
     @Override
     public void rollback() {
         try {
+            executor.doBeforeRollback();
             transaction.rollback();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -64,26 +63,26 @@ public class DefaultSession implements Session {
 
     @Override
     public <T> List<T> selectList(String mapping, Object parameter) {
-        SelectSqlNode ssn = builder.getSelectSqlNode(mapping);
+        SqlNode sn = builder.getSqlNode(mapping);
         Sql sql = new Sql(parameter);
         try {
-            ssn.generate(sql);
+            sn.generate(sql);
         } catch (Throwable throwable) {
             return null;
         }
-        return executor.queryForList(sql.getSql(), sql.getParams(), ssn.getReturnType());
+        return executor.queryForList(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
     }
 
     @Override
     public <T> T selectOne(String mapping, Object parameter) {
-        SelectSqlNode ssn = builder.getSelectSqlNode(mapping);
+        SqlNode sn = builder.getSqlNode(mapping);
         Sql sql = new Sql(parameter);
         try {
-            ssn.generate(sql);
+            sn.generate(sql);
         } catch (Throwable throwable) {
             return null;
         }
-        return (T) executor.queryForOne(sql.getSql(), sql.getParams(), ssn.getReturnType());
+        return executor.queryForOne(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
     }
 
 
@@ -104,13 +103,14 @@ public class DefaultSession implements Session {
 
     @Override
     public int update(String mapping, Object parameter) {
-        UpdateSqlNode usn = builder.getUpdateSqlNode(mapping);
+        SqlNode sn = builder.getSqlNode(mapping);
         Sql sql = new Sql(parameter);
         try {
-            usn.generate(sql);
+            sn.generate(sql);
         } catch (Throwable throwable) {
             return 0;
         }
+        System.out.println("update" + sql);
         return executor.update(sql.getSql(), sql.getParams());
     }
 

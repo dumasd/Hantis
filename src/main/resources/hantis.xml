@@ -11,7 +11,7 @@
         <transactionManager type="JDBC">
             <property name="sessionFactories" value="development1,development2"/>
         </transactionManager>
-
+        <executor type="BATCH"></executor>
         <sessionFactory id="development1">
             <dataSource type="POOL">
                 <property name="driver" value="${mysql.driver}"/>

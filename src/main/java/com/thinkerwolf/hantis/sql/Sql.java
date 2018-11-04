@@ -20,6 +20,14 @@ public class Sql {
 
     private List<Param> params = new Params();
 
+    /**
+     * 参数类型
+     */
+    private Class<?> parameterType;
+    /**
+     * 返回类型
+     */
+    private Class<?> returnType;
 
     public Sql(Object inputParameter) {
         if (inputParameter == null) {
@@ -53,7 +61,23 @@ public class Sql {
         return inputParameter;
     }
 
-//	public Configuration getConfiguration() {
+    public Class<?> getParameterType() {
+        return parameterType;
+    }
+
+    public void setParameterType(Class<?> parameterType) {
+        this.parameterType = parameterType;
+    }
+
+    public Class<?> getReturnType() {
+        return returnType;
+    }
+
+    public void setReturnType(Class<?> returnType) {
+        this.returnType = returnType;
+    }
+
+    //	public Configuration getConfiguration() {
 //		return configuration;
 //	}
 //
@@ -64,7 +88,7 @@ public class Sql {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("[SQL]" + sqlBuilder);
+        sb.append("[SQL]" + getSql());
         sb.append(" [Params]" + params);
         return sb.toString();
     }

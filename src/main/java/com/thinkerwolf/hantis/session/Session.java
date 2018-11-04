@@ -1,11 +1,10 @@
 package com.thinkerwolf.hantis.session;
 
+import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-public interface Session {
-
-    void close();
+public interface Session extends Closeable {
 
     void commit();
 

@@ -2,16 +2,18 @@ package com.thinkerwolf.hantis.transaction;
 
 public abstract class AbstractTransactionDefinition implements TransactionDefinition {
 
-    protected TransactionIsolationLevel isolationLevel;
-    protected TransactionPropagationBehavior propagationBehavior;
+    private TransactionIsolationLevel isolationLevel;
+    private TransactionPropagationBehavior propagationBehavior;
+    private boolean autoCommit;
 
     public AbstractTransactionDefinition(TransactionIsolationLevel isolationLevel,
-                                         TransactionPropagationBehavior propagationBehavior) {
+                                         TransactionPropagationBehavior propagationBehavior, boolean autoCommit) {
         if (isolationLevel == null || propagationBehavior == null) {
             throw new IllegalArgumentException("");
         }
         this.isolationLevel = isolationLevel;
         this.propagationBehavior = propagationBehavior;
+        this.autoCommit = autoCommit;
     }
 
     @Override
@@ -24,4 +26,8 @@ public abstract class AbstractTransactionDefinition implements TransactionDefini
         return propagationBehavior;
     }
 
+    @Override
+    public boolean isAutoCommit() {
+        return false;
+    }
 }

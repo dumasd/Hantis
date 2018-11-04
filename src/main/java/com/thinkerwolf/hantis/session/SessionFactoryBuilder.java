@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.session;
 
+import com.thinkerwolf.hantis.executor.Executor;
 import com.thinkerwolf.hantis.sql.SelectSqlNode;
 import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.sql.UpdateSqlNode;
@@ -18,6 +19,8 @@ public final class SessionFactoryBuilder {
     private Map<String, SqlNode> sqlNodeMap;
     private TransactionManager transactionManager;
     private Configuration configuration;
+    private Executor executor;
+
 
     public String getId() {
         return id;
@@ -59,11 +62,16 @@ public final class SessionFactoryBuilder {
         this.configuration = configuration;
     }
 
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
     public SelectSqlNode getSelectSqlNode(String mapping) {
-        SqlNode sqlNode = sqlNodeMap.get(mapping);
-        if (sqlNode == null) {
-            throw new RuntimeException("[" + mapping + "] isn't found");
-        }
+        SqlNode sqlNode = getSqlNode(mapping);
         if (!(sqlNode instanceof SelectSqlNode)) {
             throw new RuntimeException("[" + mapping + "] isn't a select sql node");
         }
@@ -71,14 +79,19 @@ public final class SessionFactoryBuilder {
     }
 
     public UpdateSqlNode getUpdateSqlNode(String mapping) {
-        SqlNode sqlNode = sqlNodeMap.get(mapping);
-        if (sqlNode == null) {
-            throw new RuntimeException("[" + mapping + "] isn't found");
-        }
+        SqlNode sqlNode = getSqlNode(mapping);
         if (!(sqlNode instanceof UpdateSqlNode)) {
             throw new RuntimeException("[" + mapping + "] isn't a select sql node");
         }
         return (UpdateSqlNode) sqlNode;
+    }
+
+    public SqlNode getSqlNode(String mapping) {
+        SqlNode sqlNode = sqlNodeMap.get(mapping);
+        if (sqlNode == null) {
+            throw new RuntimeException("[" + mapping + "] isn't found");
+        }
+        return sqlNode;
     }
 
     /**
@@ -88,5 +101,6 @@ public final class SessionFactoryBuilder {
         SessionFactory sessionFactory = new DefaultSessionFactory(this);
         return sessionFactory;
     }
+
 
 }

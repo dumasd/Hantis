@@ -53,8 +53,8 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
             connection.setTransactionIsolation(definition.getIsolationLevel().getId());
             holder.setPreviousIsolationLevel(connection.getTransactionIsolation());
             holder.setPreviousAutoCommit(connection.getAutoCommit());
-            if (connection.getAutoCommit()) {
-                connection.setAutoCommit(false);
+            if (connection.getAutoCommit() != definition.isAutoCommit()) {
+                connection.setAutoCommit(definition.isAutoCommit());
             }
             holder.setConnection(connection);
 
@@ -117,12 +117,16 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
 
         @Override
         public void commit() throws SQLException {
-            resourceHolder.connection.commit();
+            if (!resourceHolder.connection.getAutoCommit()) {
+                resourceHolder.connection.commit();
+            }
         }
 
         @Override
         public void rollback() throws SQLException {
-            resourceHolder.connection.rollback();
+            if (!resourceHolder.connection.getAutoCommit()) {
+                resourceHolder.connection.rollback();
+            }
         }
 
         @Override

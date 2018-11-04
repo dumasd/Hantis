@@ -16,17 +16,6 @@ public class TextSqlNode extends AbstractSqlNode {
         this.text = text;
         init();
     }
-
-    @Override
-    public boolean generate(Sql sql) throws Throwable {
-        sql.appendSql(this.jdbcSql);
-        for (String expression : expressions) {
-            Object value = Ognl.getValue(expression, sql.getInputParameter());
-            sql.appendParam(new Param(value));
-        }
-        return true;
-    }
-
     public String getText() {
         return text;
     }
@@ -43,17 +32,21 @@ public class TextSqlNode extends AbstractSqlNode {
             arguMh.find();
             expressions.add(arguMh.group());
         }
-        if (expressions.size() > 0) {
-            StringBuilder sb = new StringBuilder();
-            for (String s : SqlNode.SPLIT.split(text)) {
-                sb.append(s);
-                sb.append(" ? ");
-            }
-            this.jdbcSql = sb.toString();
-        } else {
-            this.jdbcSql = text;
+        jdbcSql = text;
+        for (String express : expressions) {
+            jdbcSql = jdbcSql.replaceAll("#\\s*\\{\\s*" + express + "\\s*\\}", "?");
         }
-
     }
+
+    @Override
+    public boolean generate(Sql sql) throws Throwable {
+        sql.appendSql(this.jdbcSql);
+        for (String expression : expressions) {
+            Object value = Ognl.getValue(expression, sql.getInputParameter());
+            sql.appendParam(new Param(value));
+        }
+        return true;
+    }
+
 
 }

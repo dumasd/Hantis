@@ -8,7 +8,7 @@ import com.thinkerwolf.hantis.common.type.TypeHandler;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
-import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager.JdbcResourceHolder;
+import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -17,19 +17,45 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * sql执行器
- *
- * @author wukai
- */
-@Deprecated
-public class SqlExecutor {
+public abstract class AbstractExecutor implements Executor {
 
     private DataSource dataSource;
 
     private NameHandler nameHandler = new DefaultNameHandler();
 
     private Configuration configuration;
+
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
+
+    public Configuration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
+    @Override
+    public void doBeforeCommit() throws SQLException {
+
+    }
+
+    @Override
+    public void doBeforeRollback() throws SQLException {
+
+    }
+
+    @Override
+    public <T> T execute(StatementExecuteCallback<T> callback) {
+        return callback.execute();
+    }
 
     public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
         Connection connection = getConnection();
@@ -75,60 +101,43 @@ public class SqlExecutor {
         return l.get(0);
     }
 
-    public <T> T execute(StatementExecuteCallback<T> callback) {
-        return callback.execute();
-    }
-
-    /**
-     * @param sql
-     * @param params
-     * @return
-     */
+    @Override
     public int update(String sql, List<Param> params) {
         Connection connection = getConnection();
         PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
-        StatementExecuteCallback<Integer> callback = new StatementExecuteCallback<Integer>() {
-            @Override
-            public Integer execute() {
-                try {
-                    PreparedStatement ps = builder.build();
-                    return ps.executeUpdate();
-                } catch (Throwable e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-        return execute(callback);
+//        StatementExecuteCallback<Integer> callback = new StatementExecuteCallback<Integer>() {
+//            @Override
+//            public Integer execute() {
+//                try {
+//                    PreparedStatement ps = builder.build();
+//                    return ps.executeUpdate();
+//                } catch (Throwable e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }
+//        };
+        return doUpdate(sql, params, connection);
     }
 
+    protected abstract int doUpdate(String sql, List<Param> params, Connection connection);
+
+
     protected Connection getConnection() {
-        JdbcResourceHolder resourceHolder = (JdbcResourceHolder) TransactionSychronizationManager
+        JdbcTransactionManager.JdbcResourceHolder resourceHolder = (JdbcTransactionManager.JdbcResourceHolder) TransactionSychronizationManager
                 .getResource(dataSource);
         if (resourceHolder != null) {
             return resourceHolder.getConnection();
         } else {
             try {
-                return dataSource.getConnection();
+                Connection connection = dataSource.getConnection();
+                resourceHolder = new JdbcTransactionManager.JdbcResourceHolder(dataSource);
+                resourceHolder.setConnection(connection);
+                TransactionSychronizationManager.bindResource(dataSource, resourceHolder);
+                return connection;
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
-    public Configuration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
     }
 
     private static class ClassRowHander<T> implements RowHandler<T> {
@@ -190,11 +199,12 @@ public class SqlExecutor {
         }
     }
 
-    private class PreparedStatementBuilderImpl implements PreparedStatementBuilder {
+    protected class PreparedStatementBuilderImpl implements PreparedStatementBuilder {
 
         private Connection connection;
         private String sql;
         private List<Param> params;
+        private PreparedStatement ps;
 
         public PreparedStatementBuilderImpl(Connection connection, String sql, List<Param> params) {
             this.connection = connection;
@@ -202,9 +212,16 @@ public class SqlExecutor {
             this.params = params;
         }
 
+        public PreparedStatementBuilderImpl(PreparedStatement ps, List<Param> params) {
+            this.ps = ps;
+            this.params = params;
+        }
+
         @Override
         public PreparedStatement build() throws Throwable {
-            PreparedStatement ps = connection.prepareStatement(sql);
+            if (ps == null) {
+                ps = connection.prepareStatement(sql);
+            }
             if (params != null) {
                 for (int i = 0; i < params.size(); i++) {
                     Param param = params.get(i);
@@ -220,5 +237,6 @@ public class SqlExecutor {
             return ps;
         }
     }
+
 
 }

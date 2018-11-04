@@ -9,6 +9,10 @@ import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
 import com.thinkerwolf.hantis.datasource.jdbc.DBUnpoolDataSource;
 import com.thinkerwolf.hantis.datasource.jta.DBXAPoolDataSource;
 import com.thinkerwolf.hantis.datasource.jta.DBXAUnpoolDataSource;
+import com.thinkerwolf.hantis.executor.BatchExecutor;
+import com.thinkerwolf.hantis.executor.CommonExecutor;
+import com.thinkerwolf.hantis.executor.Executor;
+import com.thinkerwolf.hantis.executor.ExecutorType;
 import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
 import com.thinkerwolf.hantis.sql.SqlNode;
@@ -43,8 +47,12 @@ public class XMLConfig {
     private Configuration configuration;
 
     public XMLConfig(InputStream is) {
+        this(is, new Configuration());
+    }
+
+    public XMLConfig(InputStream is, Configuration configuration) {
         this.is = is;
-        this.configuration = new Configuration();
+        this.configuration = configuration;
     }
 
     public void parse() {
@@ -106,18 +114,27 @@ public class XMLConfig {
         if (StringUtils.isEmpty(id)) {
             id = DEFAULT_SESSION_FACTORY_ID_PREFFIX + sessionFacrotyId.incrementAndGet();
         }
+        // 解析DataSource
         SessionFactoryBuilder builder = new SessionFactoryBuilder();
         Element dataSourceEl = (Element) el.getElementsByTagName("dataSource").item(0);
         DataSource dataSource = parseDataSource(dataSourceEl);
 
+        // 解析mapping
         Map<String, SqlNode> sqlNodeMap = new HashMap<>();
         Element sqlsEl = (Element) el.getElementsByTagName("mappings").item(0);
         parseMappings(sqlsEl, sqlNodeMap);
+
+        // 解析Executor
+        NodeList exeNl = el.getElementsByTagName("executor");
+        Executor executor = parseExecutor((Element) (exeNl.getLength() > 0 ? exeNl.item(0) : null));
+        executor.setConfiguration(configuration);
+        executor.setDataSource(dataSource);
 
         builder.setId(id);
         builder.setDataSource(dataSource);
         builder.setSqlNodeMap(sqlNodeMap);
         builder.setConfiguration(configuration);
+        builder.setExecutor(executor);
         configuration.putSessionFactoryBuilder(builder);
         return builder;
     }
@@ -177,6 +194,27 @@ public class XMLConfig {
             //TODO scanpath 解析 orm注解
 
         }
+    }
+
+    private Executor parseExecutor(Element el) {
+        Executor executor;
+        if (el != null) {
+            String type = el.getAttribute("type");
+            if (ExecutorType.COMMON.name().equalsIgnoreCase(type)) {
+                executor = new CommonExecutor();
+            } else if (ExecutorType.BATCH.name().equalsIgnoreCase(type)) {
+                executor = new BatchExecutor();
+            } else {
+                Class<?> clazz = ClassUtils.forName(type);
+                if (!Executor.class.isAssignableFrom(clazz)) {
+                    throw new RuntimeException("Type [" + type + "] is not the subclass of Executor");
+                }
+                executor = (Executor) ClassUtils.newInstance(ClassUtils.forName(type));
+            }
+        } else {
+            executor = new CommonExecutor();
+        }
+        return executor;
     }
 
     private String getPropertyValue(String originValue) {

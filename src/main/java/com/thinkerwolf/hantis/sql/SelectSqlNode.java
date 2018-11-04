@@ -25,6 +25,8 @@ public class SelectSqlNode<P, T> extends AbstractSqlNode {
                 sn.generate(sql);
             }
         }
+        sql.setParameterType(parameterType);
+        sql.setReturnType(returnType);
         return true;
     }
 

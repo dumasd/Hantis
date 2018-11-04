@@ -22,8 +22,7 @@
     </update>
 
     <update id="insertOne" parameterType="java.util.Map">
-        insert into blog (id, title,
-        content) values (#{id}, # {title}, #{ content })
+        insert into blog (id, title, content) values (#{id}, # {title}, #{ content })
     </update>
 
 </mapping>

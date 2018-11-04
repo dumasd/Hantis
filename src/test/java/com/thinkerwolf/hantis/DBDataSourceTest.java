@@ -4,10 +4,7 @@ import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
 import org.junit.Test;
 
 import java.lang.Thread.UncaughtExceptionHandler;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class DBDataSourceTest {
 
@@ -29,11 +26,33 @@ public class DBDataSourceTest {
         ds.setDriver("com.mysql.cj.jdbc.Driver");
         ds.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC");
         ds.setUsername("root");
-        ds.setPassword("123");
+        ds.setPassword("1234");
         ds.setMaxConn(100);
         ds.setMinConn(2);
 
-        int threadNum = 100;
+        Connection connection = ds.getConnection();
+        connection.setAutoCommit(false);
+
+        long startMillis = System.currentTimeMillis();
+
+        PreparedStatement ps = connection.prepareStatement("INSERT INTO blog (id, title, content) VALUES (?, ?, ?)");
+        for (int i = 10; i <= 1010; i++) {
+
+            ps.setInt(1, i);
+            ps.setString(2, "nonbatch_title_" + i);
+            ps.setString(3, "nonbatch_content_" + i);
+            ps.addBatch();
+        }
+        ps.executeBatch();
+        connection.commit();
+        System.out.println("Time : " + (System.currentTimeMillis() - startMillis));
+        // nonbatch 671ms   batch 425
+
+
+
+
+
+        /*int threadNum = 100;
         while (threadNum-- > 0) {
             final int n = threadNum;
             Thread t = new Thread() {
@@ -67,7 +86,7 @@ public class DBDataSourceTest {
             };
             t.setUncaughtExceptionHandler(threadExceptionHandler);
             t.start();
-        }
+        } */
 
     }
 }

@@ -1,8 +1,13 @@
 package com.thinkerwolf.hantis.session;
 
+import com.thinkerwolf.hantis.common.io.Resource;
+import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.common.type.TypeHandlerRegistry;
+import com.thinkerwolf.hantis.conf.xml.XMLConfig;
 import com.thinkerwolf.hantis.sql.xml.XmlSqlNodeParser;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +51,20 @@ public class Configuration {
 
     public TypeHandlerRegistry getTypeHandlerRegistry() {
         return typeHandlerRegistry;
+    }
+
+    public Configuration config(String configPath) {
+        try {
+            return config(Resources.getResource(configPath).getInputStream());
+        } catch (Exception e) {
+            throw new RuntimeException("Parse config file error", e);
+        }
+    }
+
+    public Configuration config(InputStream is) {
+        XMLConfig xmlConfig = new XMLConfig(is, this);
+        xmlConfig.parse();
+        return this;
     }
 
 }
