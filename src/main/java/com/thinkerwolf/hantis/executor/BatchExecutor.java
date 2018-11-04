@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * TODO 优化
+ */
 public class BatchExecutor extends AbstractExecutor {
 
     private Map<Connection, Map<String, PreparedStatement>> batchStatments = new ConcurrentHashMap<>();
