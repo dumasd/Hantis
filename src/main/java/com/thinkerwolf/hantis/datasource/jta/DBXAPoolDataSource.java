@@ -55,13 +55,15 @@ public class DBXAPoolDataSource extends AbstractXADataSource {
         }
         synchronized (this) {
             if (pool == null) {
-                pool = new XAConnectionPool(minConn, maxConn, new PoolableObjectFactory<ProxyXAConnection>() {
+                pool = new XAConnectionPool(minConn, maxConn);
+                pool.setObjectFactory(new PoolableObjectFactory<ProxyXAConnection>() {
                     @Override
                     public ProxyXAConnection newObject() throws Exception {
                         System.out.println("newObject");
-                        return new ProxyXAConnection(xaDataSource.getXAConnection());
+                        return new ProxyXAConnection(xaDataSource.getXAConnection(), pool);
                     }
                 });
+                pool.init();
             }
             return pool;
         }

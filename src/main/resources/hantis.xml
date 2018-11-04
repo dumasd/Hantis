@@ -11,13 +11,14 @@
         <transactionManager type="JDBC">
             <property name="sessionFactories" value="development1,development2"/>
         </transactionManager>
-        <executor type="BATCH"></executor>
+        <executor type="COMMON"></executor>
         <sessionFactory id="development1">
-            <dataSource type="POOL">
+            <dataSource type="XAPOOL">
                 <property name="driver" value="${mysql.driver}"/>
                 <property name="url" value="${mysql.url}"/>
                 <property name="username" value="${mysql.username}"/>
                 <property name="password" value="${mysql.password}"/>
+                <property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource"/>
             </dataSource>
             <mappings>
                 <mapping resource="classpath:sqls/BlogSqls.xml"/>

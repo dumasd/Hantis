@@ -17,6 +17,10 @@ class XAConnectionPool extends GenericObjectPool<ProxyXAConnection> {
         super(minNum, maxNum, objectFactory);
     }
 
+    public XAConnectionPool(int minNum, int maxNum) {
+        super(minNum, maxNum);
+    }
+
     @Override
     protected void doClose() throws Exception {
         super.doClose();

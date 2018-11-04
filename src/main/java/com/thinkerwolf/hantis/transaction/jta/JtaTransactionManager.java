@@ -1,11 +1,16 @@
 package com.thinkerwolf.hantis.transaction.jta;
 
-import com.thinkerwolf.hantis.transaction.AbstractTransactionManager;
-import com.thinkerwolf.hantis.transaction.Transaction;
-import com.thinkerwolf.hantis.transaction.TransactionDefinition;
-import com.thinkerwolf.hantis.transaction.TransactionException;
+import com.thinkerwolf.hantis.transaction.*;
+
+import javax.transaction.UserTransaction;
 
 public class JtaTransactionManager extends AbstractTransactionManager {
+
+    private UserTransaction userTransaction;
+
+    private TransactionManager transactionManager;
+
+
 
     @Override
     protected Transaction doGetTransaction(TransactionDefinition defination) {
@@ -24,6 +29,7 @@ public class JtaTransactionManager extends AbstractTransactionManager {
 
     @Override
     protected void doBegin(Transaction transaction, TransactionDefinition definition) throws TransactionException {
+
 
     }
 
@@ -46,5 +52,6 @@ public class JtaTransactionManager extends AbstractTransactionManager {
     protected void doClearAfterCompletion(Transaction transaction) throws TransactionException {
 
     }
+
 
 }
