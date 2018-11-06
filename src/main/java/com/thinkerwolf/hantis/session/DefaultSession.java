@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.session;
 
+import com.thinkerwolf.hantis.common.StopWatch;
 import com.thinkerwolf.hantis.executor.Executor;
 import com.thinkerwolf.hantis.sql.Sql;
 import com.thinkerwolf.hantis.sql.SqlNode;
@@ -10,6 +11,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class DefaultSession implements Session {
 
     private Transaction transaction;
@@ -19,7 +23,9 @@ public class DefaultSession implements Session {
     private Executor executor;
 
     private SessionFactoryBuilder builder;
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(DefaultSession.class);
+    
     public DefaultSession(Transaction transaction, SessionFactoryBuilder builder) {
         this.transaction = transaction;
         this.builder = builder;
@@ -77,10 +83,15 @@ public class DefaultSession implements Session {
     public <T> T selectOne(String mapping, Object parameter) {
         SqlNode sn = builder.getSqlNode(mapping);
         Sql sql = new Sql(parameter);
+        StopWatch sw = StopWatch.start();
         try {
             sn.generate(sql);
         } catch (Throwable throwable) {
             return null;
+        }
+        
+        if (logger.isDebugEnabled()) {
+        	logger.debug(sql.toString() + " 生成SQL消耗时间：" + sw.end());
         }
         return executor.queryForOne(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
     }
@@ -105,12 +116,16 @@ public class DefaultSession implements Session {
     public int update(String mapping, Object parameter) {
         SqlNode sn = builder.getSqlNode(mapping);
         Sql sql = new Sql(parameter);
+        StopWatch sw = StopWatch.start();
         try {
             sn.generate(sql);
         } catch (Throwable throwable) {
             return 0;
         }
-        System.out.println("update" + sql);
+        if (logger.isDebugEnabled()) {
+        	logger.debug(sql.toString() + " 生成SQL消耗时间：" + sw.end());
+        }
+       // System.out.println("update" + sql);
         return executor.update(sql.getSql(), sql.getParams());
     }
 

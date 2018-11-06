@@ -157,13 +157,13 @@ public class XMLConfig {
         } else {
             dataSource = (DataSource) ClassUtils.newInstance(ClassUtils.forName(dataSourceType));
         }
-        NodeList propsNl = el.getElementsByTagName("property");
-        Properties props = new Properties();
-        for (int i = 0, len = propsNl.getLength(); i < len; i++) {
-            Element propEl = (Element) propsNl.item(i);
-            props.setProperty(propEl.getAttribute("name").trim(),
-                    getPropertyValue(propEl.getAttribute("value").trim()));
-        }
+      //  NodeList propsNl = el.getElementsByTagName("property");
+        Properties props = parseElementProps(el);
+//        for (int i = 0, len = propsNl.getLength(); i < len; i++) {
+//            Element propEl = (Element) propsNl.item(i);
+//            props.setProperty(propEl.getAttribute("name").trim(),
+//                    getPropertyValue(propEl.getAttribute("value").trim()));
+//        }
         PropertyUtils.setProperties(dataSource, props);
         return dataSource;
     }
@@ -248,7 +248,28 @@ public class XMLConfig {
         }
 
     }
-
+    
+    private Properties parseElementProps(Element el) {
+    	NodeList propsNl = el.getElementsByTagName("property");
+        Properties props = new Properties();
+        for (int i = 0, len = propsNl.getLength(); i < len; i++) {
+            Element propEl = (Element) propsNl.item(i);
+            Object value = null;
+            if (propEl.hasAttribute("value")) {
+            	value = getPropertyValue(propEl.getAttribute("value").trim());
+            } else {
+            	NodeList l = propEl.getElementsByTagName("props");
+            	if (l.getLength() > 0) {
+            		value = parseElementProps((Element) l.item(0));
+            	}
+            }
+            if (value != null)
+            	props.put(propEl.getAttribute("name").trim(), value);
+        }
+    	return props;
+    }
+    
+    
     public Configuration getConfiguration() {
         return configuration;
     }

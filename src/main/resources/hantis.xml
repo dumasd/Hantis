@@ -4,21 +4,29 @@
         <property name="mysql.url"
                   value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC"/>
         <property name="mysql.username" value="root"/>
-        <property name="mysql.password" value="1234"/>
+        <property name="mysql.password" value="123"/>
     </props>
 
     <sessionFactories>
         <transactionManager type="JDBC">
             <property name="sessionFactories" value="development1,development2"/>
         </transactionManager>
-        <executor type="COMMON"></executor>
+        
         <sessionFactory id="development1">
-            <dataSource type="XAPOOL">
+        	<executor type="BATCH" />
+           <!--   <dataSource type="POOL">
+                <property name="driver" value="${mysql.driver}"/>
+                <property name="url" value="${mysql.url}"/>
+                <property name="username" value="${mysql.username}"/>
+                <property name="password" value="${mysql.password}"/>
+            </dataSource> -->
+            <dataSource type="POOL">
                 <property name="driver" value="${mysql.driver}"/>
                 <property name="url" value="${mysql.url}"/>
                 <property name="username" value="${mysql.username}"/>
                 <property name="password" value="${mysql.password}"/>
                 <property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource"/>
+                
             </dataSource>
             <mappings>
                 <mapping resource="classpath:sqls/BlogSqls.xml"/>

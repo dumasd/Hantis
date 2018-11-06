@@ -26,7 +26,6 @@ public class BatchExecutor extends AbstractExecutor {
     protected int doUpdate(String sql, List<Param> params, Connection connection) {
         return execute(() -> {
             try {
-
                 Map<String, PreparedStatement> map = batchStatments.get(connection);
                 if (map == null) {
                     map = new HashMap<>();
