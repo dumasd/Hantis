@@ -1,16 +1,23 @@
 package com.thinkerwolf.hantis.executor;
 
+import com.thinkerwolf.hantis.cache.Cache;
+import com.thinkerwolf.hantis.cache.CacheKey;
+import com.thinkerwolf.hantis.cache.SimpleCache;
 import com.thinkerwolf.hantis.common.DefaultNameHandler;
 import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
-import com.thinkerwolf.hantis.common.type.JDBCType;
-import com.thinkerwolf.hantis.common.type.TypeHandler;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
 import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
+import com.thinkerwolf.hantis.type.JDBCType;
+import com.thinkerwolf.hantis.type.TypeHandler;
 
 import javax.sql.DataSource;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.*;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,224 +26,254 @@ import java.util.Map;
 
 public abstract class AbstractExecutor implements Executor {
 
-    private DataSource dataSource;
+	private DataSource dataSource;
 
-    private NameHandler nameHandler = new DefaultNameHandler();
+	private NameHandler nameHandler = new DefaultNameHandler();
 
-    private Configuration configuration;
+	private Configuration configuration;
+	/** 一级查询缓存 */
+	private Cache cache = new SimpleCache();
 
+	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public DataSource getDataSource() {
-        return dataSource;
-    }
+	public DataSource getDataSource() {
+		return dataSource;
+	}
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
+	}
 
-    public Configuration getConfiguration() {
-        return configuration;
-    }
+	public Configuration getConfiguration() {
+		return configuration;
+	}
 
-    public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
-    }
+	public void setConfiguration(Configuration configuration) {
+		this.configuration = configuration;
+	}
 
-    @Override
-    public void doBeforeCommit() throws SQLException {
+	@Override
+	public void doBeforeCommit() throws SQLException {
 
-    }
+	}
 
-    @Override
-    public void doBeforeRollback() throws SQLException {
+	@Override
+	public void doBeforeRollback() throws SQLException {
 
-    }
+	}
 
-    @Override
-    public <T> T execute(StatementExecuteCallback<T> callback) {
-        return callback.execute();
-    }
+	@Override
+	public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
+		return queryForList(sql, params, new ResultSetListHandler<>(new ClassRowHander<>(clazz, nameHandler)));
+	}
 
-    public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
-        Connection connection = getConnection();
-        ResultSetListHandler<T> listHandler = new ResultSetListHandler<>(new ClassRowHander<>(clazz, nameHandler));
-        PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
-        return execute(new QueryStatementExecuteCallback<>(builder, listHandler));
-    }
+	@Override
+	public <T> List<T> queryForList(String sql, Class<T> clazz) {
+		return queryForList(sql, Collections.emptyList(), clazz);
+	}
 
-    public <T> List<T> queryForList(String sql, Class<T> clazz) {
-        return queryForList(sql, Collections.emptyList(), clazz);
-    }
+	@Override
+	public <T> T queryForOne(String sql, List<Param> params, Class<T> clazz) {
+		List<T> l = queryForList(sql, params, clazz);
+		if (l.size() == 0) {
+			return null;
+		}
+		if (l.size() > 1) {
+			throw new RuntimeException("");
+		}
+		return l.get(0);
+	}
 
-    public <T> T queryForOne(String sql, List<Param> params, Class<T> clazz) {
-        List<T> l = queryForList(sql, params, clazz);
-        if (l.size() == 0) {
-            return null;
-        }
-        if (l.size() > 1) {
-            throw new RuntimeException("");
-        }
-        return l.get(0);
-    }
+	@Override
+	public List<Map<String, Object>> queryForList(String sql, List<Param> params) {
+		return queryForList(sql, params, new ResultSetListHandler<>(new MapRowHandler()));
+	}
 
-    public List<Map<String, Object>> queryForList(String sql, List<Param> params) {
-        ResultSetListHandler<Map<String, Object>> listHandler = new ResultSetListHandler<>(new MapRowHandler());
-        Connection connection = getConnection();
-        PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
-        return execute(new QueryStatementExecuteCallback<>(builder, listHandler));
-    }
+	@Override
+	public List<Map<String, Object>> queryForList(String sql) {
+		return queryForList(sql, Collections.emptyList());
+	}
 
-    public List<Map<String, Object>> queryForList(String sql) {
-        return queryForList(sql, Collections.emptyList());
-    }
+	@Override
+	public Map<String, Object> queryForOne(String sql, List<Param> params) {
+		List<Map<String, Object>> l = queryForList(sql, params);
+		if (l.size() == 0) {
+			return null;
+		}
+		if (l.size() > 1) {
+			throw new ExecutorException("The result size > 1");
+		}
+		return l.get(0);
+	}
 
-    public Map<String, Object> queryForOne(String sql, List<Param> params) {
-        List<Map<String, Object>> l = queryForList(sql, params);
-        if (l.size() == 0) {
-            return null;
-        }
-        if (l.size() > 1) {
-            throw new RuntimeException("");
-        }
-        return l.get(0);
-    }
+	@Override
+	public <T> List<T> queryForList(String sql, List<Param> params, ResultSetListHandler<T> listHandler) {
+		Connection connection = getConnection();
+		CacheKey cacheKey = createCacheKey(sql, params);
+		RowBound rb = (RowBound) cache.getObject(cacheKey);
+		QueryStatementExecuteCallback<List<T>> callback;
+		if (rb == null) {
+			PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
+			callback = new QueryStatementExecuteCallback<>(builder, listHandler);
+			logger.debug("[" + sql + "] queryForList no cache");
+		} else {
+			callback = new QueryStatementExecuteCallback<>(listHandler, rb);
+			logger.debug("[" + sql + "] queryForList use cache");
+		}
+		List<T> result = execute(callback);
+		cache.putObject(cacheKey, callback.getRowBound());
+		return result;
+	}
 
-    @Override
-    public int update(String sql, List<Param> params) {
-        Connection connection = getConnection();
-        PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
-//        StatementExecuteCallback<Integer> callback = new StatementExecuteCallback<Integer>() {
-//            @Override
-//            public Integer execute() {
-//                try {
-//                    PreparedStatement ps = builder.build();
-//                    return ps.executeUpdate();
-//                } catch (Throwable e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        };
-        return doUpdate(sql, params, connection);
-    }
+	@Override
+	public <T> T execute(StatementExecuteCallback<T> callback) {
+		return callback.execute();
+	}
 
-    protected abstract int doUpdate(String sql, List<Param> params, Connection connection);
+	@Override
+	public int update(String sql, List<Param> params) {
+		Connection connection = getConnection();
+		int num = doUpdate(sql, params, connection);
+		cache.clear();
+		return num;
+	}
 
+	protected abstract int doUpdate(String sql, List<Param> params, Connection connection);
 
-    protected Connection getConnection() {
-        JdbcTransactionManager.JdbcResourceHolder resourceHolder = (JdbcTransactionManager.JdbcResourceHolder) TransactionSychronizationManager
-                .getResource(dataSource);
-        if (resourceHolder != null) {
-            return resourceHolder.getConnection();
-        } else {
-            try {
-                Connection connection = dataSource.getConnection();
-                resourceHolder = new JdbcTransactionManager.JdbcResourceHolder(dataSource);
-                resourceHolder.setConnection(connection);
-                TransactionSychronizationManager.bindResource(dataSource, resourceHolder);
-                return connection;
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+	private CacheKey createCacheKey(String sql, List<Param> params) {
+		CacheKey key = new CacheKey();
+		key.append(sql).append(params);
+		return key;
+	}
 
-    private static class ClassRowHander<T> implements RowHandler<T> {
-        private Class<T> clazz;
-        private NameHandler nameHandler;
+	protected Connection getConnection() {
+		JdbcTransactionManager.JdbcResourceHolder resourceHolder = (JdbcTransactionManager.JdbcResourceHolder) TransactionSychronizationManager
+				.getResource(dataSource);
+		if (resourceHolder != null) {
+			return resourceHolder.getConnection();
+		} else {
+			try {
+				Connection connection = dataSource.getConnection();
+				resourceHolder = new JdbcTransactionManager.JdbcResourceHolder(dataSource);
+				resourceHolder.setConnection(connection);
+				TransactionSychronizationManager.bindResource(dataSource, resourceHolder);
+				return connection;
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
 
-        public ClassRowHander(Class<T> clazz, NameHandler nameHandler) {
-            this.clazz = clazz;
-            this.nameHandler = nameHandler;
-        }
+	private static class ClassRowHander<T> implements RowHandler<T> {
+		private Class<T> clazz;
+		private NameHandler nameHandler;
 
-        @Override
-        public T processRow(ResultSet rs) throws Throwable {
-            T t = clazz.newInstance();
-            ResultSetMetaData meta = rs.getMetaData();
-            int count = meta.getColumnCount();
-            for (int i = 0; i < count; i++) {
-                Object obj = rs.getObject(i + 1);
-                String columnName = meta.getColumnName(i + 1);
-                PropertyUtils.setProperty(t, nameHandler.convertToPropertyName(columnName), obj);
-            }
-            return t;
-        }
-    }
+		public ClassRowHander(Class<T> clazz, NameHandler nameHandler) {
+			this.clazz = clazz;
+			this.nameHandler = nameHandler;
+		}
 
-    private static class MapRowHandler implements RowHandler<Map<String, Object>> {
-        @Override
-        public Map<String, Object> processRow(ResultSet rs) throws Throwable {
-            Map<String, Object> map = new HashMap<>();
-            ResultSetMetaData meta = rs.getMetaData();
-            int count = meta.getColumnCount();
-            for (int i = 0; i < count; i++) {
-                Object obj = rs.getObject(i + 1);
-                String columnName = meta.getColumnName(i + 1);
-                map.put(columnName, obj);
-            }
-            return map;
-        }
-    }
+		@Override
+		public T processRow(ResultSet rs) throws Throwable {
+			T t = clazz.newInstance();
+			ResultSetMetaData meta = rs.getMetaData();
+			int count = meta.getColumnCount();
+			for (int i = 0; i < count; i++) {
+				Object obj = rs.getObject(i + 1);
+				String columnName = meta.getColumnName(i + 1);
+				PropertyUtils.setProperty(t, nameHandler.convertToPropertyName(columnName), obj);
+			}
+			return t;
+		}
+	}
 
-    private static class QueryStatementExecuteCallback<T> implements StatementExecuteCallback<T> {
-        private PreparedStatementBuilder builder;
-        private ResultSetHandler<T> listHandler;
+	private static class MapRowHandler implements RowHandler<Map<String, Object>> {
+		@Override
+		public Map<String, Object> processRow(ResultSet rs) throws Throwable {
+			Map<String, Object> map = new HashMap<>();
+			ResultSetMetaData meta = rs.getMetaData();
+			int count = meta.getColumnCount();
+			for (int i = 0; i < count; i++) {
+				Object obj = rs.getObject(i + 1);
+				String columnName = meta.getColumnName(i + 1);
+				map.put(columnName, obj);
+			}
+			return map;
+		}
+	}
 
-        public QueryStatementExecuteCallback(PreparedStatementBuilder builder, ResultSetHandler<T> listHandler) {
-            this.builder = builder;
-            this.listHandler = listHandler;
-        }
+	private static class QueryStatementExecuteCallback<T> implements StatementExecuteCallback<T> {
+		private PreparedStatementBuilder builder;
+		private ResultSetHandler<T> listHandler;
+		private RowBound rowBound;
 
-        @Override
-        public T execute() {
-            try {
-                PreparedStatement ps = builder.build();
-                ResultSet rs = ps.executeQuery();
-                return listHandler.process(rs);
-            } catch (Throwable e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+		public QueryStatementExecuteCallback(PreparedStatementBuilder builder, ResultSetHandler<T> listHandler) {
+			this.builder = builder;
+			this.listHandler = listHandler;
+		}
 
-    protected class PreparedStatementBuilderImpl implements PreparedStatementBuilder {
+		public QueryStatementExecuteCallback(ResultSetHandler<T> listHandler, RowBound rowBound) {
+			this.listHandler = listHandler;
+			this.rowBound = rowBound;
+		}
 
-        private Connection connection;
-        private String sql;
-        private List<Param> params;
-        private PreparedStatement ps;
+		@Override
+		public T execute() {
+			try {
+				ResultSet rs;
+				if (rowBound == null) {
+					PreparedStatement ps = builder.build();
+					rs = ps.executeQuery();
+					rowBound = new RowBound(rs);
+				}
+				return listHandler.process(rowBound.getResultSet());
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		}
 
-        public PreparedStatementBuilderImpl(Connection connection, String sql, List<Param> params) {
-            this.connection = connection;
-            this.sql = sql;
-            this.params = params;
-        }
+		public RowBound getRowBound() {
+			return rowBound;
+		}
+	}
 
-        public PreparedStatementBuilderImpl(PreparedStatement ps, List<Param> params) {
-            this.ps = ps;
-            this.params = params;
-        }
+	protected class PreparedStatementBuilderImpl implements PreparedStatementBuilder {
 
-        @Override
-        public PreparedStatement build() throws Throwable {
-            if (ps == null) {
-                ps = connection.prepareStatement(sql);
-            }
-            if (params != null) {
-                for (int i = 0; i < params.size(); i++) {
-                    Param param = params.get(i);
-                    TypeHandler<?> handler;
-                    if (param.getType() != JDBCType.UNKONWN) {
-                        handler = configuration.getTypeHandlerRegistry().getHandler(param.getType());
-                    } else {
-                        handler = configuration.getTypeHandlerRegistry().getHandler(param.getValue().getClass());
-                    }
-                    handler.setParameter(ps, i + 1, param.getValue(), param.getType());
-                }
-            }
-            return ps;
-        }
-    }
+		private Connection connection;
+		private String sql;
+		private List<Param> params;
+		private PreparedStatement ps;
 
+		public PreparedStatementBuilderImpl(Connection connection, String sql, List<Param> params) {
+			this.connection = connection;
+			this.sql = sql;
+			this.params = params;
+		}
+
+		public PreparedStatementBuilderImpl(PreparedStatement ps, List<Param> params) {
+			this.ps = ps;
+			this.params = params;
+		}
+
+		@Override
+		public PreparedStatement build() throws Throwable {
+			if (ps == null) {
+				ps = connection.prepareStatement(sql);
+			}
+			if (params != null) {
+				for (int i = 0; i < params.size(); i++) {
+					Param param = params.get(i);
+					TypeHandler<?> handler;
+					if (param.getType() != JDBCType.UNKONWN) {
+						handler = configuration.getTypeHandlerRegistry().getHandler(param.getType());
+					} else {
+						handler = configuration.getTypeHandlerRegistry().getHandler(param.getValue().getClass());
+					}
+					handler.setParameter(ps, i + 1, param.getValue(), param.getType());
+				}
+			}
+			return ps;
+		}
+	}
 
 }

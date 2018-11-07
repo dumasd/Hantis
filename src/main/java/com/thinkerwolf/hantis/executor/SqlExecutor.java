@@ -3,12 +3,12 @@ package com.thinkerwolf.hantis.executor;
 import com.thinkerwolf.hantis.common.DefaultNameHandler;
 import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
-import com.thinkerwolf.hantis.common.type.JDBCType;
-import com.thinkerwolf.hantis.common.type.TypeHandler;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
 import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager.JdbcResourceHolder;
+import com.thinkerwolf.hantis.type.JDBCType;
+import com.thinkerwolf.hantis.type.TypeHandler;
 
 import javax.sql.DataSource;
 import java.sql.*;

@@ -15,14 +15,19 @@ public interface Executor {
 
 
     int DEFAULT_BATCH_UPDATE_RESULT = Integer.MIN_VALUE + 1024;
-
+    <T> List<T> queryForList(String sql, Class<T> clazz);
+    
     <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz);
 
-    <T> List<T> queryForList(String sql, Class<T> clazz);
-
     <T> T queryForOne(String sql, List<Param> params, Class<T> clazz);
-
+    
+    List<Map<String, Object>> queryForList(String sql);
+    
     List<Map<String, Object>> queryForList(String sql, List<Param> params);
+    
+    Map<String, Object> queryForOne(String sql, List<Param> params);
+    
+    <T> List<T> queryForList(String sql, List<Param> params, ResultSetListHandler<T> listHandler);
 
     int update(String sql, List<Param> params);
 

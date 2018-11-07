@@ -1,6 +1,6 @@
 package com.thinkerwolf.hantis.session;
 
-import com.thinkerwolf.hantis.executor.Executor;
+import com.thinkerwolf.hantis.executor.ExecutorType;
 import com.thinkerwolf.hantis.sql.SelectSqlNode;
 import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.sql.UpdateSqlNode;
@@ -19,7 +19,7 @@ public final class SessionFactoryBuilder {
     private Map<String, SqlNode> sqlNodeMap;
     private TransactionManager transactionManager;
     private Configuration configuration;
-    private Executor executor;
+    private ExecutorType executorType;
 
 
     public String getId() {
@@ -61,16 +61,16 @@ public final class SessionFactoryBuilder {
     public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
     }
+    
+	public ExecutorType getExecutorType() {
+		return executorType;
+	}
 
-    public Executor getExecutor() {
-        return executor;
-    }
+	public void setExecutorType(ExecutorType executorType) {
+		this.executorType = executorType;
+	}
 
-    public void setExecutor(Executor executor) {
-        this.executor = executor;
-    }
-
-    public SelectSqlNode getSelectSqlNode(String mapping) {
+	public SelectSqlNode getSelectSqlNode(String mapping) {
         SqlNode sqlNode = getSqlNode(mapping);
         if (!(sqlNode instanceof SelectSqlNode)) {
             throw new RuntimeException("[" + mapping + "] isn't a select sql node");

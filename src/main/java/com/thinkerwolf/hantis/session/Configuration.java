@@ -1,16 +1,14 @@
 package com.thinkerwolf.hantis.session;
 
-import com.thinkerwolf.hantis.common.io.Resource;
 import com.thinkerwolf.hantis.common.io.Resources;
-import com.thinkerwolf.hantis.common.type.TypeHandlerRegistry;
 import com.thinkerwolf.hantis.conf.xml.XMLConfig;
 import com.thinkerwolf.hantis.sql.xml.XmlSqlNodeParser;
+import com.thinkerwolf.hantis.type.TypeHandlerRegistry;
 
-import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Project configuration
@@ -25,7 +23,7 @@ public class Configuration {
 
     private XmlSqlNodeParser parser = new XmlSqlNodeParser();
 
-    private Map<String, SessionFactoryBuilder> sessionFactoryBuilders = new ConcurrentHashMap<>();
+    private Map<String, SessionFactoryBuilder> sessionFactoryBuilders = new HashMap<>();
 
     private TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
 

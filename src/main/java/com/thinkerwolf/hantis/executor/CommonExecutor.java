@@ -9,7 +9,6 @@ import java.util.List;
 
 public class CommonExecutor extends AbstractExecutor {
 
-
     @Override
     protected int doUpdate(String sql, List<Param> params, Connection connection) {
         PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);

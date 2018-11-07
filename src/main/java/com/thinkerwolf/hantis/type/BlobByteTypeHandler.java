@@ -1,4 +1,4 @@
-package com.thinkerwolf.hantis.common.type;
+package com.thinkerwolf.hantis.type;
 
 import java.io.ByteArrayInputStream;
 import java.sql.PreparedStatement;

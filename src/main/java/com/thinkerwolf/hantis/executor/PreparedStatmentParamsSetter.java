@@ -1,9 +1,9 @@
 package com.thinkerwolf.hantis.executor;
 
 import com.thinkerwolf.hantis.common.Param;
-import com.thinkerwolf.hantis.common.type.JDBCType;
-import com.thinkerwolf.hantis.common.type.TypeHandler;
-import com.thinkerwolf.hantis.common.type.TypeHandlerRegistry;
+import com.thinkerwolf.hantis.type.JDBCType;
+import com.thinkerwolf.hantis.type.TypeHandler;
+import com.thinkerwolf.hantis.type.TypeHandlerRegistry;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

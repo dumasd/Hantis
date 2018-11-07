@@ -1,10 +1,11 @@
 package com.thinkerwolf.hantis;
 
 import com.thinkerwolf.hantis.common.Params;
-import com.thinkerwolf.hantis.common.type.JDBCType;
 import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
 import com.thinkerwolf.hantis.example.Blog;
 import com.thinkerwolf.hantis.executor.SqlExecutor;
+import com.thinkerwolf.hantis.type.JDBCType;
+
 import org.junit.Test;
 
 import java.util.List;

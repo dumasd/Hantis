@@ -20,5 +20,5 @@ public class ResultSetListHandler<T> implements ResultSetHandler<List<T>> {
         }
         return l;
     }
-
+    
 }

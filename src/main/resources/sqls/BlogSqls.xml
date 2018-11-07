@@ -4,7 +4,7 @@
         select * from blog
         <where>
             <if test="id != null">
-                id = # { id }
+                id &lt; # { id }
             </if>
             <if test="title != null">
                 title = # { title }
@@ -22,7 +22,7 @@
     </update>
 
     <update id="insertOne" parameterType="java.util.Map">
-        insert into blog (id, title, content) values (#{id}, # {title}, #{ content })
+        insert into blog (id, title, content, create_time) values (#{id}, # {title}, #{ content }, #{createTime})
     </update>
 
 </mapping>

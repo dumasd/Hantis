@@ -2,17 +2,17 @@ package com.thinkerwolf.hantis.sql;
 
 import java.util.List;
 
-public class SelectSqlNode<P, T> extends AbstractSqlNode {
+public class SelectSqlNode extends AbstractSqlNode {
     /**
      * 参数类型
      */
-    private Class<P> parameterType;
+    private Class<?> parameterType;
     /**
      * 返回类型
      */
-    private Class<T> returnType;
+    private Class<?> returnType;
 
-    public SelectSqlNode(Class<P> parameterType, Class<T> returnType) {
+    public SelectSqlNode(Class<?> parameterType, Class<?> returnType) {
         this.parameterType = parameterType;
         this.returnType = returnType;
     }
@@ -30,11 +30,11 @@ public class SelectSqlNode<P, T> extends AbstractSqlNode {
         return true;
     }
 
-    public Class<P> getParameterType() {
+    public Class<?> getParameterType() {
         return parameterType;
     }
 
-    public Class<T> getReturnType() {
+    public Class<?> getReturnType() {
         return returnType;
     }
 

@@ -1,25 +1,24 @@
-package com.thinkerwolf.hantis.common.type;
+package com.thinkerwolf.hantis.type;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
-public class StringTypeHandler extends AbstractTypeHandler<String> {
+public class NStringTypeHandler extends AbstractTypeHandler<String> {
 
     @Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, String parameter) throws SQLException {
-        stat.setString(pos, parameter);
+        stat.setNString(pos, parameter);
     }
 
     @Override
     protected String getNotNullResult(ResultSet rs, int columnIndex) throws SQLException {
-        return rs.getString(columnIndex);
+        return rs.getNString(columnIndex);
     }
 
     @Override
     protected String getNotNullResult(ResultSet rs, String columnName) throws SQLException {
-        return rs.getString(columnName);
+        return rs.getNString(columnName);
     }
 
 }

@@ -46,7 +46,7 @@ public class Sql {
     }
 
     public void appendSql(String s) {
-        sqlBuilder.append(" " + s + " ");
+        sqlBuilder.append(s + " ");
     }
 
     public void appendParam(Param param) {

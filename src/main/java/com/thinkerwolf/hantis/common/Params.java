@@ -1,8 +1,8 @@
 package com.thinkerwolf.hantis.common;
 
-import com.thinkerwolf.hantis.common.type.JDBCType;
-
 import java.util.ArrayList;
+
+import com.thinkerwolf.hantis.type.JDBCType;
 
 public final class Params extends ArrayList<Param> {
 

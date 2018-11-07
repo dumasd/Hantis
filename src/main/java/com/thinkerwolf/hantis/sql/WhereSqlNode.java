@@ -23,14 +23,14 @@ public class WhereSqlNode extends AbstractSqlNode {
                         first = false;
                         childSqlBuilder.append(childrenSql.getSql());
                     } else {
-                        childSqlBuilder.append(" AND" + childrenSql.getSql());
+                        childSqlBuilder.append("AND " + childrenSql.getSql());
                     }
                     childParams.addAll(childrenSql.getParams());
                 }
             }
         }
         if (success) {
-            sql.appendSql(" WHERE" + childSqlBuilder.toString());
+            sql.appendSql("WHERE " + childSqlBuilder.toString());
             sql.appendParams(childParams);
         }
         return success;

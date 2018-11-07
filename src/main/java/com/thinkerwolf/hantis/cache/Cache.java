@@ -14,6 +14,7 @@ public interface Cache {
     int getSize();
 
     void clear();
-
+    
+    
 
 }
