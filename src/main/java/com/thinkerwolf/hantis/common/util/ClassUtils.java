@@ -34,8 +34,8 @@ public class ClassUtils {
         } catch (ClassNotFoundException e) {
             try {
                 return Class.forName(name, true, Thread.currentThread().getContextClassLoader());
-            } catch (ClassNotFoundException e1) {
-                throw new RuntimeException(e1);
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
             }
         }
     }
