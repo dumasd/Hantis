@@ -39,7 +39,8 @@ public class RowBound implements Closeable {
 			if (logger.isDebugEnabled()) {
 				logger.debug("Close Rowbound resultSet");
 			}
-			resultSet.close();
+            resultSet.getStatement().close();
+            resultSet.close();
 		} catch (SQLException e) {
 			throw new IOException(e);
 		}

@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class BatchExecutor extends AbstractExecutor {
 
-    private Map<Connection, Map<String, PreparedStatement>> batchStatments = new ConcurrentHashMap<>();
+    private Map<String, PreparedStatement> batchStatments = new ConcurrentHashMap<>();
 
     @Override
     public ExecutorType getType() {
@@ -26,15 +26,11 @@ public class BatchExecutor extends AbstractExecutor {
     protected int doUpdate(String sql, List<Param> params, Connection connection) {
         return execute(() -> {
             try {
-                Map<String, PreparedStatement> map = batchStatments.get(connection);
-                if (map == null) {
-                    map = new HashMap<>();
-                    batchStatments.put(connection, map);
-                }
-                PreparedStatement ps = map.get(sql);
+
+                PreparedStatement ps = batchStatments.get(sql);
                 if (ps == null) {
                     ps = new PreparedStatementBuilderImpl(connection, sql, params).build();
-                    map.put(sql, ps);
+                    batchStatments.put(sql, ps);
                 } else {
                     new PreparedStatementBuilderImpl(ps, params).build();
                 }
@@ -49,8 +45,7 @@ public class BatchExecutor extends AbstractExecutor {
     @Override
     public void doBeforeCommit() throws SQLException {
         try {
-            Map<String, PreparedStatement> pss = batchStatments.get(getConnection());
-            for (PreparedStatement ps : pss.values()) {
+            for (PreparedStatement ps : batchStatments.values()) {
                 ps.executeBatch();
             }
         } catch (SQLException e) {
@@ -63,14 +58,44 @@ public class BatchExecutor extends AbstractExecutor {
     @Override
     public void doBeforeRollback() throws SQLException {
         try {
-            Map<String, PreparedStatement> pss = batchStatments.get(getConnection());
-            for (PreparedStatement ps : pss.values()) {
+            for (PreparedStatement ps : batchStatments.values()) {
                 ps.clearBatch();
             }
         } catch (SQLException e) {
             throw new ExecutorException("Clear batch", e);
         } finally {
             batchStatments.clear();
+        }
+    }
+
+    @Override
+    protected void doClose() {
+        super.doClose();
+        closeStatment();
+    }
+
+    @Override
+    public void doAfterCommit() throws SQLException {
+        super.doAfterCommit();
+        closeStatment();
+    }
+
+    @Override
+    public void doAfterRollback() throws SQLException {
+        super.doAfterRollback();
+        closeStatment();
+    }
+
+    private void closeStatment() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("Close Batch executor statments.");
+        }
+        for (PreparedStatement ps : batchStatments.values()) {
+            try {
+                ps.clearBatch();
+                ps.close();
+            } catch (SQLException e) {
+            }
         }
         batchStatments.clear();
     }

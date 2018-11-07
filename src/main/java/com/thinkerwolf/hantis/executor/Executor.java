@@ -37,11 +37,16 @@ public interface Executor {
 
     void doBeforeRollback() throws SQLException;
 
+    void doAfterCommit() throws SQLException;
+
+    void doAfterRollback() throws SQLException;
+
     ExecutorType getType();
 
     void setDataSource(DataSource dataSource);
 
     void setConfiguration(Configuration configuration);
 
+    void close();
 
 }

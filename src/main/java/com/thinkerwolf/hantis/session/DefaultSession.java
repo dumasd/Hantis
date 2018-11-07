@@ -42,9 +42,10 @@ public class DefaultSession implements Session {
 	public void close() throws IOException {
 		try {
 			transaction.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+            executor.close();
+        } catch (Exception e) {
+            throw new IOException(e);
+        }
 	}
 
 	@Override
@@ -52,9 +53,10 @@ public class DefaultSession implements Session {
 		try {
 			executor.doBeforeCommit();
 			transaction.commit();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+            executor.doAfterCommit();
+        } catch (SQLException e) {
+            logger.error("commit", e);
+        }
 	}
 
 	@Override
@@ -62,7 +64,8 @@ public class DefaultSession implements Session {
 		try {
 			executor.doBeforeRollback();
 			transaction.rollback();
-		} catch (SQLException e) {
+            executor.doAfterRollback();
+        } catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
