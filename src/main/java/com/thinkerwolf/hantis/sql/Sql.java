@@ -45,16 +45,19 @@ public class Sql {
         return params;
     }
 
-    public void appendSql(String s) {
+    public Sql appendSql(String s) {
         sqlBuilder.append(s + " ");
+        return this;
     }
 
-    public void appendParam(Param param) {
+    public Sql appendParam(Param param) {
         this.params.add(param);
+        return this;
     }
 
-    public void appendParams(List<Param> params) {
+    public Sql appendParams(List<Param> params) {
         this.params.addAll(params);
+        return this;
     }
 
     public Object getInputParameter() {

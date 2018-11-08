@@ -9,7 +9,6 @@ import com.thinkerwolf.hantis.session.*;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.util.*;
 
 public class SessionFactoryTest {
@@ -29,7 +28,7 @@ public class SessionFactoryTest {
             Map<String, Object> p = new HashMap<>();
             StopWatch sw = StopWatch.start();
             
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 1000; i++) {
             	 p.put("id", 10000);
             	 List<Blog> list = session.selectList("tableBlog.selectOne", p);
             	 

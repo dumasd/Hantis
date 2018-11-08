@@ -1,6 +1,7 @@
 package com.thinkerwolf.hantis.common.util;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -150,5 +151,9 @@ public class ReflectionUtils {
         }
         return null;
     }
-
+    
+    public static <T extends Annotation> T getAnnotation(Field field, Class<T> annotationClass) {
+        return field.getAnnotation(annotationClass);
+    }
+    
 }
