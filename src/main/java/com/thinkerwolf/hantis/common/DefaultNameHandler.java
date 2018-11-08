@@ -38,9 +38,8 @@ public class DefaultNameHandler implements NameHandler {
                 columnName.append('_');
                 columnName.append(Character.toLowerCase(c));
             } else {
-                columnName.append(c);
+                columnName.append(Character.toLowerCase(c));
             }
-
         }
         return columnName.toString();
     }

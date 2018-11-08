@@ -39,6 +39,12 @@ public class TableEntity<T> implements Closeable {
 
 	private String updateSql;
 
+    private String insertSql;
+
+    private String deleteSql;
+
+    private String selectSql;
+
 	public TableEntity(Class<T> clazz, NameHandler nameHandler) {
 		this.clazz = clazz;
 		this.nameHandler = nameHandler;
@@ -52,10 +58,8 @@ public class TableEntity<T> implements Closeable {
 		} else {
 			tableName = nameHandler.convertToColumnName(clazz.getSimpleName());
 		}
-
-		boolean hasId = false;
-		for (Field field : clazz.getFields()) {
-			Id id = ReflectionUtils.getAnnotation(field, Id.class);
+        for (Field field : clazz.getDeclaredFields()) {
+            Id id = ReflectionUtils.getAnnotation(field, Id.class);
 			if (id != null) {
 				String columnName = createColumnName(field);
 				tableColumnMap.put(columnName, new TableColumn(field, columnName, true));
@@ -66,7 +70,19 @@ public class TableEntity<T> implements Closeable {
 				}
 			}
 		}
-	}
+        this.selectSql = generateSelectSql();
+        this.updateSql = generateUpdateSql();
+        this.deleteSql = generateDeleteSql();
+        this.insertSql = generateInsertSql();
+
+    }
+
+    private String generateSelectSql() {
+        StringBuilder sb = new StringBuilder("SELECT * FROM ");
+        sb.append(tableName);
+        return sb.toString();
+
+    }
 
 	private String generateUpdateSql() {
 		StringBuilder sb = new StringBuilder("UPDATE " + tableName + " SET ");
@@ -78,19 +94,67 @@ public class TableEntity<T> implements Closeable {
 			sb.append(tc.getColumnName() + " = ? ");
 			index++;
 		}
-		sb.append("WHERE ");
-		index = 1;
+        sb.append(" WHERE ");
+        index = 1;
 		for (TableColumn tc : tableColumnMap.values()) {
-
-			index++;
-		}
+            if (tc.isPrimaryKey()) {
+                if (index != 1) {
+                    sb.append("AND ");
+                }
+                sb.append(tc.getColumnName()).append(" = ? ");
+                index++;
+            }
+        }
 		return sb.toString();
 	}
 
+
+    private String generateDeleteSql() {
+        StringBuilder sb = new StringBuilder("DELETE FROM " + tableName);
+        sb.append(" WHERE ");
+        int index = 1;
+        for (TableColumn tc : tableColumnMap.values()) {
+            if (tc.isPrimaryKey()) {
+                if (index != 1) {
+                    sb.append("AND ");
+                }
+                sb.append(tc.getColumnName());
+                sb.append(" = ? ");
+                index++;
+            }
+        }
+        return sb.toString();
+    }
+
+    private String generateInsertSql() {
+        StringBuilder sb = new StringBuilder("INSERT INTO " + tableName);
+        sb.append(" (");
+        int index = 1;
+        for (TableColumn tc : tableColumnMap.values()) {
+            if (index != 1) {
+                sb.append(", ");
+            }
+            sb.append(tc.getColumnName());
+            index++;
+        }
+        sb.append(") VALUES (");
+
+        for (int i = 0; i < tableColumnMap.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append("?");
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+
+
 	public Sql parseSelectSql(Object parameter) {
 		Sql sql = new Sql(parameter);
-		sql.appendSql("SELECT * FROM " + tableName);
-		sql.setReturnType(clazz);
+        sql.appendSql(this.selectSql);
+        sql.setReturnType(clazz);
 		Params params = new Params();
 		StringBuilder condition = new StringBuilder();
 		boolean first = true;
@@ -116,37 +180,52 @@ public class TableEntity<T> implements Closeable {
 		return sql;
 	}
 
-	public Sql parseUpdateSql(T oldEntity, T entity) {
-		if (entity.getClass() != clazz) {
+    public Sql parseUpdateSql(T entity) {
+        if (entity.getClass() != clazz) {
 			throw new RuntimeException("Parm is not the type of " + clazz.getName());
 		}
 		Sql sql = new Sql(null);
-		sql.appendSql("UPDATE " + tableName + " SET ");
-		sql.setReturnType(void.class);
-		TableColumn idColumn = null;
+        sql.appendSql(this.updateSql);
+        sql.setReturnType(void.class);
 		for (TableColumn tc : tableColumnMap.values()) {
-			sql.appendSql(tc.getColumnName() + " = ?, ");
 			sql.appendParam(new Param(tc.getValue(entity)));
-			if (tc.isPrimaryKey()) {
-				idColumn = tc;
-			}
 		}
-		return sql;
+        for (TableColumn tc : tableColumnMap.values()) {
+            if (tc.isPrimaryKey()) {
+                sql.appendParam(new Param(tc.getValue(entity)));
+            }
+        }
+        return sql;
 	}
 
-	public Sql generateDeleteSql(T entity) {
-		if (entity.getClass() != clazz) {
-			throw new RuntimeException("Parm is not the type of " + clazz.getName());
-		}
-		Sql sql = new Sql(null);
-		sql.appendSql("DELETE FROM " + tableName + " SET ");
-		sql.setReturnType(void.class);
-		for (TableColumn tc : tableColumnMap.values()) {
-			sql.appendSql(tc.getColumnName() + " = ? ");
-			sql.appendParam(new Param(tc.getValue(entity)));
-		}
-		return sql;
-	}
+    public Sql parseDeleteSql(T entity) {
+        if (entity.getClass() != clazz) {
+            throw new RuntimeException("Parm is not the type of " + clazz.getName());
+        }
+        Sql sql = new Sql(null);
+        sql.appendSql(this.deleteSql);
+        sql.setReturnType(void.class);
+        for (TableColumn tc : tableColumnMap.values()) {
+            if (tc.isPrimaryKey()) {
+                sql.appendParam(new Param(tc.getValue(entity)));
+            }
+        }
+        return sql;
+    }
+
+    public Sql parseInsertSql(T entity) {
+        if (entity.getClass() != clazz) {
+            throw new RuntimeException("Parm is not the type of " + clazz.getName());
+        }
+        Sql sql = new Sql(null);
+        sql.appendSql(this.insertSql);
+        sql.setReturnType(void.class);
+        for (TableColumn tc : tableColumnMap.values()) {
+            sql.appendParam(new Param(tc.getValue(entity)));
+        }
+        return sql;
+    }
+
 
 	private String createColumnName(Field field) {
 		Column column = ReflectionUtils.getAnnotation(clazz, Column.class);
@@ -158,7 +237,7 @@ public class TableEntity<T> implements Closeable {
 
 	@Override
 	public void close() throws IOException {
-
-	}
+        tableColumnMap.clear();
+    }
 
 }
