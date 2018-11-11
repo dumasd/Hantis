@@ -4,12 +4,15 @@ import com.thinkerwolf.hantis.common.io.Resource;
 import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.common.util.ClassUtils;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
+import com.thinkerwolf.hantis.common.util.ReflectionUtils;
 import com.thinkerwolf.hantis.common.util.StringUtils;
 import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
 import com.thinkerwolf.hantis.datasource.jdbc.DBUnpoolDataSource;
 import com.thinkerwolf.hantis.datasource.jta.DBXAPoolDataSource;
 import com.thinkerwolf.hantis.datasource.jta.DBXAUnpoolDataSource;
 import com.thinkerwolf.hantis.executor.ExecutorType;
+import com.thinkerwolf.hantis.orm.TableEntity;
+import com.thinkerwolf.hantis.orm.annotation.Entity;
 import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
 import com.thinkerwolf.hantis.sql.SqlNode;
@@ -26,6 +29,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -117,17 +121,19 @@ public class XMLConfig {
 
 		// 解析mapping
 		Map<String, SqlNode> sqlNodeMap = new HashMap<>();
-		Element sqlsEl = (Element) el.getElementsByTagName("mappings").item(0);
-		parseMappings(sqlsEl, sqlNodeMap);
+        Map<String, TableEntity<?>> tableEntityMap = new HashMap<>();
+        Element sqlsEl = (Element) el.getElementsByTagName("mappings").item(0);
+        parseMappings(sqlsEl, sqlNodeMap, tableEntityMap);
 
 		// 解析Executor
 		NodeList exeNl = el.getElementsByTagName("executor");
-		ExecutorType executorType = parseExecutor((Element) (exeNl.getLength() > 0 ? exeNl.item(0) : null));
+        ExecutorType executorType = parseExecutor((Element) exeNl.item(0));
 
 		builder.setId(id);
 		builder.setDataSource(dataSource);
 		builder.setSqlNodeMap(sqlNodeMap);
-		builder.setConfiguration(configuration);
+        builder.setEntityMap(tableEntityMap);
+        builder.setConfiguration(configuration);
 		builder.setExecutorType(executorType);
 		configuration.putSessionFactoryBuilder(builder);
 		return builder;
@@ -167,28 +173,50 @@ public class XMLConfig {
 	 *
 	 * @param el
 	 */
-	private void parseMappings(Element el, Map<String, SqlNode> sqlNodeMap) {
-		NodeList nl = el.getElementsByTagName("mapping");
+    private void parseMappings(Element el, Map<String, SqlNode> sqlNodeMap, Map<String, TableEntity<?>> tableEntityMap) {
+        NodeList nl = el.getElementsByTagName("mapping");
 		for (int i = 0, len = nl.getLength(); i < len; i++) {
 			Element mappingEl = (Element) nl.item(i);
 
 			// resource 解析sql xml文件
-			String resource = mappingEl.getAttribute("resource");
-			Resource[] resources = Resources.getResources(resource);
-			for (Resource r : resources) {
-				if (r.getPath().endsWith(".xml")) {
-					try {
-						sqlNodeMap.putAll(configuration.getParser().parse(r.getInputStream()));
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
+            if (mappingEl.hasAttribute("resource")) {
+                String resource = mappingEl.getAttribute("resource");
+                Resource[] resources = Resources.getResources(resource);
+                for (Resource r : resources) {
+                    if (r.getPath().endsWith(".xml")) {
+                        try {
+                            sqlNodeMap.putAll(configuration.getParser().parse(r.getInputStream()));
+                        } catch (Throwable e) {
+                            e.printStackTrace();
+                        }
+                    }
 				}
 			}
 
-			// TODO scanpath 解析 orm注解
+            // 解析TableEntity
+            if (mappingEl.hasAttribute("class")) {
+                String clazz = mappingEl.getAttribute("class");
+                parseAnnotationEntity(ClassUtils.forName(clazz), tableEntityMap);
+            }
 
-		}
-	}
+            if (mappingEl.hasAttribute("package")) {
+                String packageName = mappingEl.getAttribute("package");
+                Set<Class<?>> set = ClassUtils.scanClasses(packageName);
+                for (Class<?> clazz : set) {
+                    parseAnnotationEntity(clazz, tableEntityMap);
+                }
+            }
+
+
+        }
+    }
+
+
+    private void parseAnnotationEntity(Class<?> clazz, Map<String, TableEntity<?>> map) {
+        if (ReflectionUtils.getAnnotation(clazz, Entity.class) != null) {
+            map.put(clazz.getName(), new TableEntity<>(clazz, configuration.getNameHandler()));
+        }
+    }
 
 	private ExecutorType parseExecutor(Element el) {
 		if (el != null) {

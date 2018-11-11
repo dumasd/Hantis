@@ -4,7 +4,7 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-public interface Session extends Closeable {
+public interface Session extends Closeable, OrmSession {
 
     void commit();
 

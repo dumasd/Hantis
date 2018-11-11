@@ -1,5 +1,7 @@
 package com.thinkerwolf.hantis.session;
 
+import com.thinkerwolf.hantis.common.DefaultNameHandler;
+import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.conf.xml.XMLConfig;
 import com.thinkerwolf.hantis.sql.xml.XmlSqlNodeParser;
@@ -27,6 +29,8 @@ public class Configuration {
 
     private TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
 
+    private NameHandler nameHandler = new DefaultNameHandler();
+
     public Properties getProps() {
         return props;
     }
@@ -49,6 +53,14 @@ public class Configuration {
 
     public TypeHandlerRegistry getTypeHandlerRegistry() {
         return typeHandlerRegistry;
+    }
+
+    public NameHandler getNameHandler() {
+        return nameHandler;
+    }
+
+    public void setNameHandler(NameHandler nameHandler) {
+        this.nameHandler = nameHandler;
     }
 
     public Configuration config(String configPath) {

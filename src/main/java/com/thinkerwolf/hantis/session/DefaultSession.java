@@ -5,6 +5,7 @@ import com.thinkerwolf.hantis.executor.BatchExecutor;
 import com.thinkerwolf.hantis.executor.CommonExecutor;
 import com.thinkerwolf.hantis.executor.Executor;
 import com.thinkerwolf.hantis.executor.ExecutorType;
+import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.sql.Sql;
 import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.transaction.Transaction;
@@ -159,5 +160,48 @@ public class DefaultSession implements Session {
 		executor.setConfiguration(builder.getConfiguration());
 		return executor;
 	}
+
+    @Override
+    public <T> List<T> getList(Class<T> clazz, Object parameter) {
+        TableEntity tableEntity = getTableEntity(clazz);
+        Sql sql = tableEntity.parseSelectSql(parameter);
+        return executor.queryForList(sql.getSql(), sql.getParams(), clazz);
+    }
+
+    @Override
+    public <T> T get(Class<T> clazz, Object parameter) {
+        TableEntity tableEntity = getTableEntity(clazz);
+        Sql sql = tableEntity.parseSelectSql(parameter);
+        return executor.queryForOne(sql.getSql(), sql.getParams(), clazz);
+    }
+
+    @Override
+    public <T> int update(T entity) {
+        TableEntity tableEntity = getTableEntity(entity.getClass());
+        Sql sql = tableEntity.parseUpdateSql(entity);
+        return executor.update(sql.getSql(), sql.getParams());
+    }
+
+    @Override
+    public <T> int delete(T entity) {
+        TableEntity tableEntity = getTableEntity(entity.getClass());
+        Sql sql = tableEntity.parseDeleteSql(entity);
+        return executor.update(sql.getSql(), sql.getParams());
+    }
+
+    @Override
+    public <T> int create(T entity) {
+        TableEntity tableEntity = getTableEntity(entity.getClass());
+        Sql sql = tableEntity.parseInsertSql(entity);
+        return executor.update(sql.getSql(), sql.getParams());
+    }
+
+    private TableEntity getTableEntity(Class<?> clazz) {
+        TableEntity tableEntity = builder.getEntityMap().get(clazz.getName());
+        if (tableEntity == null) {
+            throw new RuntimeException("Table entity null");
+        }
+        return tableEntity;
+    }
 
 }

@@ -180,7 +180,7 @@ public class TableEntity<T> implements Closeable {
 		return sql;
 	}
 
-    public Sql parseUpdateSql(T entity) {
+    public Sql parseUpdateSql(Object entity) {
         if (entity.getClass() != clazz) {
 			throw new RuntimeException("Parm is not the type of " + clazz.getName());
 		}
@@ -198,7 +198,7 @@ public class TableEntity<T> implements Closeable {
         return sql;
 	}
 
-    public Sql parseDeleteSql(T entity) {
+    public Sql parseDeleteSql(Object entity) {
         if (entity.getClass() != clazz) {
             throw new RuntimeException("Parm is not the type of " + clazz.getName());
         }
@@ -213,7 +213,7 @@ public class TableEntity<T> implements Closeable {
         return sql;
     }
 
-    public Sql parseInsertSql(T entity) {
+    public Sql parseInsertSql(Object entity) {
         if (entity.getClass() != clazz) {
             throw new RuntimeException("Parm is not the type of " + clazz.getName());
         }
@@ -228,8 +228,8 @@ public class TableEntity<T> implements Closeable {
 
 
 	private String createColumnName(Field field) {
-		Column column = ReflectionUtils.getAnnotation(clazz, Column.class);
-		if (column == null || StringUtils.isEmpty(column.name())) {
+        Column column = ReflectionUtils.getAnnotation(field, Column.class);
+        if (column == null || StringUtils.isEmpty(column.name())) {
 			return nameHandler.convertToColumnName(field.getName());
 		}
 		return column.name();

@@ -1,6 +1,7 @@
 package com.thinkerwolf.hantis.session;
 
 import com.thinkerwolf.hantis.executor.ExecutorType;
+import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.sql.SelectSqlNode;
 import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.sql.UpdateSqlNode;
@@ -20,7 +21,7 @@ public final class SessionFactoryBuilder {
     private TransactionManager transactionManager;
     private Configuration configuration;
     private ExecutorType executorType;
-
+    private Map<String, TableEntity<?>> entityMap;
 
     public String getId() {
         return id;
@@ -44,6 +45,14 @@ public final class SessionFactoryBuilder {
 
     public void setSqlNodeMap(Map<String, SqlNode> sqlNodeMap) {
         this.sqlNodeMap = sqlNodeMap;
+    }
+
+    public Map<String, TableEntity<?>> getEntityMap() {
+        return entityMap;
+    }
+
+    public void setEntityMap(Map<String, TableEntity<?>> entityMap) {
+        this.entityMap = entityMap;
     }
 
     public TransactionManager getTransactionManager() {

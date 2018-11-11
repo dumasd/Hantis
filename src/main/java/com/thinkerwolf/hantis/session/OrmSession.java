@@ -10,13 +10,13 @@ import java.util.List;
  */
 public interface OrmSession {
 
-	<T> List<T> selectList(Class<T> clazz, Object parameter);
+    <T> List<T> getList(Class<T> clazz, Object parameter);
 
-	<T> T select(Class<T> clazz, Object parameter);
+    <T> T get(Class<T> clazz, Object parameter);
 
 	<T> int update(T entity);
 
 	<T> int delete(T entity);
 
-	<T> int insert(T entity);
+    <T> int create(T entity);
 }

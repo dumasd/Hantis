@@ -2,12 +2,9 @@ package com.thinkerwolf.hantis.example;
 
 import java.util.Date;
 
-import com.thinkerwolf.hantis.orm.annotation.Entity;
-import com.thinkerwolf.hantis.orm.annotation.GeneratedValue;
-import com.thinkerwolf.hantis.orm.annotation.Id;
-import com.thinkerwolf.hantis.orm.annotation.Index;
+import com.thinkerwolf.hantis.orm.annotation.*;
 
-@Entity
+@Entity(name = "blog")
 public class Blog {
 
 	@Id
@@ -15,13 +12,17 @@ public class Blog {
 	private int id;
 
 	@Index
-	private int userId;
+    @Column(name = "user_id")
+    private int userId;
 
-	private String title;
+    @Column(name = "title")
+    private String title;
 
-	private String content;
+    @Column(name = "content")
+    private String content;
 
-	private Date createTime;
+    @Column(name = "create_time")
+    private Date createTime;
 
 	public int getId() {
 		return id;

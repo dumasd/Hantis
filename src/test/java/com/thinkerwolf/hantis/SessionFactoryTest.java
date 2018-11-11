@@ -27,9 +27,23 @@ public class SessionFactoryTest {
         try {
             Map<String, Object> p = new HashMap<>();
             StopWatch sw = StopWatch.start();
-            
-            for (int i = 0; i < 1000; i++) {
-            	 p.put("id", 10000);
+
+            p.put("id", "3");
+            Blog blog = session.get(Blog.class, p);
+            System.out.println(blog);
+
+            Blog blog1 = new Blog();
+            blog1.setId(1000);
+            blog1.setTitle("hantis");
+            blog1.setContent("hantis_content");
+            blog1.setUserId(122);
+            blog1.setCreateTime(new Date());
+            session.create(blog1);
+
+            session.commit();
+
+            /*for (int i = 0; i < 1000; i++) {
+                 p.put("id", 10000);
             	 List<Blog> list = session.selectList("tableBlog.selectOne", p);
             	 
             	 if (i == 54) {
@@ -49,7 +63,7 @@ public class SessionFactoryTest {
             	 }
             	 
                  
-            }
+            }*/
             
            
             

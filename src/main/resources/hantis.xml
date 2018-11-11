@@ -4,7 +4,7 @@
         <property name="mysql.url"
                   value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC"/>
         <property name="mysql.username" value="root"/>
-        <property name="mysql.password" value="123"/>
+        <property name="mysql.password" value="1234"/>
     </props>
 
     <sessionFactories>
@@ -29,7 +29,8 @@
                 
             </dataSource>
             <mappings>
-                <mapping resource="classpath:sqls/BlogSqls.xml"/>
+                <mapping resource="classpath:sqls/*.xml"/>
+                <mapping package="com.thinkerwolf.hantis.*"/>
             </mappings>
         </sessionFactory>
 
