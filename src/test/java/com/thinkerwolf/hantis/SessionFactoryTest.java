@@ -33,12 +33,21 @@ public class SessionFactoryTest {
             System.out.println(blog);
 
             Blog blog1 = new Blog();
-            blog1.setId(1000);
+            //blog1.setId(1000);
             blog1.setTitle("hantis");
             blog1.setContent("hantis_content");
             blog1.setUserId(122);
             blog1.setCreateTime(new Date());
             session.create(blog1);
+
+
+            Blog blog2 = new Blog();
+            //blog1.setId(1000);
+            blog2.setTitle("hantis_t");
+            blog2.setContent("hantis_content_t");
+            blog2.setUserId(122);
+            blog2.setCreateTime(new Date());
+            session.create(blog2);
 
             session.commit();
 
@@ -96,6 +105,26 @@ public class SessionFactoryTest {
 
 
     }
+
+    @Test
+    public void autoGenerate() throws Exception {
+        Resource resource = new ClassPathResource("hantis.xml");
+        Configuration cfg = new Configuration();
+        cfg.config(resource.getInputStream());
+        SessionFactoryBuilder sfb = cfg.getSessionFactoryBuilders().get("development1");
+        SessionFactory sf = sfb.build();
+        Session session = sf.openSession();
+
+        try {
+
+
+        } finally {
+            session.close();
+        }
+
+
+    }
+
 
 
 }

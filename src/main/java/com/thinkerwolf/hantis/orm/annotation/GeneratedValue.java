@@ -13,5 +13,6 @@ import java.lang.annotation.Target;
 public @interface GeneratedValue {
 	
 	//TODO 指定自生成策略
-	
+    //GenerateStrategy value();
+
 }

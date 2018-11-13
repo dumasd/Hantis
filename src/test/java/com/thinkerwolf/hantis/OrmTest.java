@@ -18,13 +18,13 @@ public class OrmTest {
         blog.setContent("content");
         blog.setUserId(123);
         blog.setCreateTime(new Date());
-        System.out.println(tableEntity.parseInsertSql(blog));
+        //System.out.println(tableEntity.parseInsertSql(blog));
 
-        System.out.println(tableEntity.parseDeleteSql(blog));
+        //System.out.println(tableEntity.parseDeleteSql(blog));
 
-        System.out.println(tableEntity.parseUpdateSql(blog));
+        //System.out.println(tableEntity.parseUpdateSql(blog));
 
-        System.out.println(tableEntity.parseSelectSql(blog));
+        //System.out.println(tableEntity.parseSelectSql(blog));
 
     }
 

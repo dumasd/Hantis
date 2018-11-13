@@ -178,22 +178,22 @@ public class DefaultSession implements Session {
     @Override
     public <T> int update(T entity) {
         TableEntity tableEntity = getTableEntity(entity.getClass());
-        Sql sql = tableEntity.parseUpdateSql(entity);
-        return executor.update(sql.getSql(), sql.getParams());
+		Sql sql = tableEntity.parseUpdateSql(executor, entity);
+		return executor.update(sql.getSql(), sql.getParams());
     }
 
     @Override
     public <T> int delete(T entity) {
         TableEntity tableEntity = getTableEntity(entity.getClass());
-        Sql sql = tableEntity.parseDeleteSql(entity);
-        return executor.update(sql.getSql(), sql.getParams());
+		Sql sql = tableEntity.parseDeleteSql(executor, entity);
+		return executor.update(sql.getSql(), sql.getParams());
     }
 
     @Override
     public <T> int create(T entity) {
         TableEntity tableEntity = getTableEntity(entity.getClass());
-        Sql sql = tableEntity.parseInsertSql(entity);
-        return executor.update(sql.getSql(), sql.getParams());
+		Sql sql = tableEntity.parseInsertSql(executor, entity);
+		return executor.update(sql.getSql(), sql.getParams());
     }
 
     private TableEntity getTableEntity(Class<?> clazz) {

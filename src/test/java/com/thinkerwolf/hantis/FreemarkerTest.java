@@ -75,4 +75,10 @@ public class FreemarkerTest {
 
     }
 
+
+    public void genrateEntity() {
+
+
+    }
+
 }

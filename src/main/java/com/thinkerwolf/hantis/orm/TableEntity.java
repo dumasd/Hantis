@@ -11,10 +11,8 @@ import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.Params;
 import com.thinkerwolf.hantis.common.util.ReflectionUtils;
 import com.thinkerwolf.hantis.common.util.StringUtils;
-import com.thinkerwolf.hantis.orm.annotation.Column;
-import com.thinkerwolf.hantis.orm.annotation.Entity;
-import com.thinkerwolf.hantis.orm.annotation.Id;
-import com.thinkerwolf.hantis.orm.annotation.IngnoreField;
+import com.thinkerwolf.hantis.executor.Executor;
+import com.thinkerwolf.hantis.orm.annotation.*;
 import com.thinkerwolf.hantis.sql.Sql;
 
 import ognl.Ognl;
@@ -62,12 +60,12 @@ public class TableEntity<T> implements Closeable {
             Id id = ReflectionUtils.getAnnotation(field, Id.class);
 			if (id != null) {
 				String columnName = createColumnName(field);
-				tableColumnMap.put(columnName, new TableColumn(field, columnName, true));
-			} else {
+                tableColumnMap.put(columnName, new TableColumn(field, columnName, tableName, true));
+            } else {
 				if (ReflectionUtils.getAnnotation(field, IngnoreField.class) == null) {
 					String columnName = createColumnName(field);
-					tableColumnMap.put(columnName, new TableColumn(field, columnName));
-				}
+                    tableColumnMap.put(columnName, new TableColumn(field, columnName, tableName));
+                }
 			}
 		}
         this.selectSql = generateSelectSql();
@@ -180,7 +178,7 @@ public class TableEntity<T> implements Closeable {
 		return sql;
 	}
 
-    public Sql parseUpdateSql(Object entity) {
+    public Sql parseUpdateSql(Executor executor, Object entity) {
         if (entity.getClass() != clazz) {
 			throw new RuntimeException("Parm is not the type of " + clazz.getName());
 		}
@@ -188,17 +186,17 @@ public class TableEntity<T> implements Closeable {
         sql.appendSql(this.updateSql);
         sql.setReturnType(void.class);
 		for (TableColumn tc : tableColumnMap.values()) {
-			sql.appendParam(new Param(tc.getValue(entity)));
-		}
+            sql.appendParam(new Param(tc.getValue(executor, entity)));
+        }
         for (TableColumn tc : tableColumnMap.values()) {
             if (tc.isPrimaryKey()) {
-                sql.appendParam(new Param(tc.getValue(entity)));
+                sql.appendParam(new Param(tc.getValue(executor, entity)));
             }
         }
         return sql;
 	}
 
-    public Sql parseDeleteSql(Object entity) {
+    public Sql parseDeleteSql(Executor executor, Object entity) {
         if (entity.getClass() != clazz) {
             throw new RuntimeException("Parm is not the type of " + clazz.getName());
         }
@@ -207,13 +205,13 @@ public class TableEntity<T> implements Closeable {
         sql.setReturnType(void.class);
         for (TableColumn tc : tableColumnMap.values()) {
             if (tc.isPrimaryKey()) {
-                sql.appendParam(new Param(tc.getValue(entity)));
+                sql.appendParam(new Param(tc.getValue(executor, entity)));
             }
         }
         return sql;
     }
 
-    public Sql parseInsertSql(Object entity) {
+    public Sql parseInsertSql(Executor executor, Object entity) {
         if (entity.getClass() != clazz) {
             throw new RuntimeException("Parm is not the type of " + clazz.getName());
         }
@@ -221,7 +219,7 @@ public class TableEntity<T> implements Closeable {
         sql.appendSql(this.insertSql);
         sql.setReturnType(void.class);
         for (TableColumn tc : tableColumnMap.values()) {
-            sql.appendParam(new Param(tc.getValue(entity)));
+            sql.appendParam(new Param(tc.getValue(executor, entity, true)));
         }
         return sql;
     }

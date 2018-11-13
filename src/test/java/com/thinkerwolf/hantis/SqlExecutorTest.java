@@ -8,6 +8,7 @@ import com.thinkerwolf.hantis.type.JDBCType;
 
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,8 +20,8 @@ public class SqlExecutorTest {
 		ds.setDriver("com.mysql.cj.jdbc.Driver");
 		ds.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC");
 		ds.setUsername("root");
-		ds.setPassword("123");
-		ds.setMaxConn(100);
+        ds.setPassword("1234");
+        ds.setMaxConn(100);
 		ds.setMinConn(2);
 
 		SqlExecutor sqlExe = new SqlExecutor();
@@ -34,6 +35,11 @@ public class SqlExecutorTest {
 		List<Blog> blogs = sqlExe.queryForList("select * from blog where id = ? ", params, Blog.class);
 		System.out.println(blogs);
 		System.out.println(m);
+
+        String maxSql = "SELECT MAX(id) as max FROM blog";
+        Map<String, Object> map = sqlExe.queryForOne(maxSql, Collections.emptyList());
+        System.out.println(map.get("max"));
+
 
 	}
 
