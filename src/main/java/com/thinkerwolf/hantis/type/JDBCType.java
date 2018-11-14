@@ -18,7 +18,7 @@ public enum JDBCType {
     /**
      * Identifies the generic SQL type {@code INTEGER}.
      */
-    INTEGER(Types.INTEGER),
+    INT(Types.INTEGER),
     /**
      * Identifies the generic SQL type {@code BIGINT}.
      */
@@ -92,7 +92,7 @@ public enum JDBCType {
      * Indicates that the SQL type is database-specific and gets mapped to a
      * Java object that can be accessed via the methods getObject and setObject.
      */
-    JAVA_OBJECT(Types.JAVA_OBJECT),
+    OBJECT(Types.JAVA_OBJECT),
     /**
      * Identifies the generic SQL type {@code DISTINCT}.
      */
@@ -153,7 +153,9 @@ public enum JDBCType {
      */
     SQLXML(Types.SQLXML),
 
-    UNKONWN(9999),;
+    UNKONWN(9999),
+    
+    ;
     private Integer type;
 
     JDBCType(final Integer type) {
@@ -168,13 +170,17 @@ public enum JDBCType {
         throw new IllegalArgumentException("Type:" + type + " is not a valid " + "Types.java value.");
     }
 
-    public static JDBCType getJDBCType(Class<?> classType) {
-        JDBCType type = JDBCType.JAVA_OBJECT;
-
-
-        return type;
+    public static JDBCType getJDBCType(String name) {
+    	for (JDBCType type : JDBCType.values()) {
+    		if (type.name().equalsIgnoreCase(name)) {
+    			return type;
+    		}
+    	}
+        return null;
     }
-
+    
+    //public static JDBCType get
+    
     public Integer getType() {
         return type;
     }

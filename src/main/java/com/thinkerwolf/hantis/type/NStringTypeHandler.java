@@ -6,7 +6,11 @@ import java.sql.SQLException;
 
 public class NStringTypeHandler extends AbstractTypeHandler<String> {
 
-    @Override
+    public NStringTypeHandler() {
+		super(String.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, String parameter) throws SQLException {
         stat.setNString(pos, parameter);
     }

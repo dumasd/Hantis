@@ -8,6 +8,10 @@ import java.util.Date;
 
 public class DateTypeHandler extends AbstractTypeHandler<Date> {
 
+	public DateTypeHandler() {
+		super(Date.class);
+	}
+
 	@Override
 	protected void setNotNullParameter(PreparedStatement stat, int pos, Date parameter) throws SQLException {
 		stat.setTimestamp(pos, new Timestamp((parameter.getTime())));

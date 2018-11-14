@@ -31,7 +31,12 @@ public class FileSystemResource extends AbstractResource {
 
     @Override
     public String getPath() {
-        return file.getAbsolutePath();
+        return file.getPath();
     }
+
+	@Override
+	public String getRealPath() {
+		return file.getAbsolutePath();
+	}
 
 }

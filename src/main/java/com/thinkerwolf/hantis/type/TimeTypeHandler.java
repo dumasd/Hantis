@@ -7,7 +7,11 @@ import java.sql.Time;
 
 public class TimeTypeHandler extends AbstractTypeHandler<Time> {
 
-    @Override
+    public TimeTypeHandler() {
+		super(Time.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Time parameter) throws SQLException {
         stat.setTime(pos, parameter);
     }

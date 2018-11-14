@@ -5,6 +5,9 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 import org.junit.Test;
 
+import com.thinkerwolf.hantis.test.DBInfo;
+import com.thinkerwolf.hantis.test.TableInfo;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
@@ -12,10 +15,9 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-@SuppressWarnings("unused")
-public class FreemarkerTest {
+public class FreemarkerGenerationTest {
 
-    @Test
+    //@Test
     public void freemarker() throws Throwable {
         Class<?>[] classTypes = new Class<?>[]{
                 //Object.class,
@@ -39,7 +41,7 @@ public class FreemarkerTest {
         // Class<?>[] classTypes = new Class<?>[] { int[].class };
         String fileName = "src/main/java/com/thinkerwolf/hantis/common/type/{%type%}TypeHandler.java";
         String templateLoadingDictory = "src/main/java/com/thinkerwolf/hantis/";
-        String templateName = "typeHandler.txt";
+        String templateName = "typeHandler.ftl";
 
         Configuration cfg = new Configuration(Configuration.VERSION_2_3_28);
         cfg.setDirectoryForTemplateLoading(new File(templateLoadingDictory));
@@ -75,10 +77,22 @@ public class FreemarkerTest {
 
     }
 
-
-    public void genrateEntity() {
-
-
+    @Test
+    public void genrateEntity() throws Exception {
+    	TableInfo tableInfo = new TableInfo();
+    	tableInfo.setPackageName("com.thinkerwolf.hantis.example");
+    	tableInfo.setOutputLocation("src/test/java/com/thinkerwolf/hantis/example");
+    	tableInfo.setTableNames("user,task");
+    	
+    	DBInfo dbInfo = new DBInfo();
+    	dbInfo.setDriver("com.mysql.cj.jdbc.Driver");
+    	dbInfo.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC");
+        dbInfo.setUser("root");
+        dbInfo.setPassword("123");
+        dbInfo.setSchameName("test");
+        
+        TableInfo.generate(tableInfo, dbInfo);
+        
     }
 
 }

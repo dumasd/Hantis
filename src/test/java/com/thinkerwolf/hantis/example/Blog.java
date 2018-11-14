@@ -9,6 +9,7 @@ public class Blog {
 
 	@Id
 	@GeneratedValue
+	@Column(name = "id")
 	private int id;
 
 	@Index

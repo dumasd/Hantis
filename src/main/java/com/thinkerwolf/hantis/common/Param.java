@@ -4,32 +4,32 @@ import com.thinkerwolf.hantis.type.JDBCType;
 
 public final class Param {
 
-    private JDBCType type;
+	private JDBCType type;
 
-    private Object value;
+	private Object value;
+	
+	public Param(JDBCType type, Object value) {
+		this.type = type;
+		this.value = value;
+	}
+	
+	public Param(Object value) {
+		this.type = JDBCType.UNKONWN;
+		this.value = value;
+	}
 
-    public Param(JDBCType type, Object value) {
-        this.type = type;
-        this.value = value;
-    }
+	public JDBCType getType() {
+		return type;
+	}
 
-    public Param(Object value) {
-        this.type = JDBCType.UNKONWN;
-        this.value = value;
-    }
+	public Object getValue() {
+		return value;
+	}
 
-    public JDBCType getType() {
-        return type;
-    }
-
-    public Object getValue() {
-        return value;
-    }
-
-    @Override
-    public String toString() {
-        return type.name() + ":" + value;
-    }
+	@Override
+	public String toString() {
+		return type.name() + ":" + value;
+	}
 
 	@Override
 	public int hashCode() {
@@ -58,7 +58,5 @@ public final class Param {
 			return false;
 		return true;
 	}
-    
-    
-    
+
 }

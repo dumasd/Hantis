@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class LongTypeHandler extends AbstractTypeHandler<Long> {
 
-    @Override
+    public LongTypeHandler() {
+		super(Long.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Long parameter) throws SQLException {
         stat.setLong(pos, parameter);
     }

@@ -51,4 +51,9 @@ public class URLResource extends AbstractResource {
         return url.toString();
     }
 
+	@Override
+	public String getRealPath() {
+		return url.getPath();
+	}
+
 }

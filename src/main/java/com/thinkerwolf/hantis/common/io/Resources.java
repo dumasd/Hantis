@@ -23,7 +23,8 @@ public final class Resources {
     public static final String RREFFIX_FILE = "file:";
     public static final String RREFFIX_HTTP = "http:";
     public static final String RREFFIX_HTTPS = "https:";
-
+    public static final String USER_DIR = System.getProperty("user.dir");
+    
     private Resources() {
     }
 

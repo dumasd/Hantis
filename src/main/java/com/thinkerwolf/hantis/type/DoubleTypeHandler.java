@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class DoubleTypeHandler extends AbstractTypeHandler<Double> {
 
-    @Override
+    public DoubleTypeHandler() {
+		super(Double.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Double parameter) throws SQLException {
         stat.setDouble(pos, parameter);
     }

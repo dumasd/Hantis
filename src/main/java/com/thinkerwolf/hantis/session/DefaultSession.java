@@ -18,7 +18,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class DefaultSession implements Session {
 
 	private Transaction transaction;
@@ -189,7 +189,7 @@ public class DefaultSession implements Session {
 		return executor.update(sql.getSql(), sql.getParams());
     }
 
-    @Override
+	@Override
     public <T> int create(T entity) {
         TableEntity tableEntity = getTableEntity(entity.getClass());
 		Sql sql = tableEntity.parseInsertSql(executor, entity);

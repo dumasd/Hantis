@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class BooleanTypeHandler extends AbstractTypeHandler<Boolean> {
 
-    @Override
+    public BooleanTypeHandler() {
+		super(Boolean.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Boolean parameter) throws SQLException {
         stat.setBoolean(pos, parameter);
     }

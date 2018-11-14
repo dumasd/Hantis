@@ -5,8 +5,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public abstract class AbstractTypeHandler<T> implements TypeHandler<T> {
+	
+	private Class<T> type;
+	
+    public AbstractTypeHandler(Class<T> type) {
+		this.type = type;
+	}
 
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
     @Override
     public void setParameter(PreparedStatement stat, int pos, Object parameter, JDBCType type) throws SQLException {
         if (parameter == null) {
@@ -48,7 +54,12 @@ public abstract class AbstractTypeHandler<T> implements TypeHandler<T> {
             return result;
         }
     }
-
+    
+    @Override
+    public Class<T> getType() {
+    	return type;
+    }
+    
     protected abstract void setNotNullParameter(PreparedStatement stat, int pos, T parameter) throws SQLException;
 
     protected abstract T getNotNullResult(ResultSet rs, int columnIndex) throws SQLException;

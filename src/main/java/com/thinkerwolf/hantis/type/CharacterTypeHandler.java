@@ -6,7 +6,11 @@ import java.sql.SQLException;
 
 public class CharacterTypeHandler extends AbstractTypeHandler<Character> {
 
-    @Override
+    public CharacterTypeHandler() {
+		super(char.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Character parameter) throws SQLException {
         stat.setString(pos, parameter.toString());
     }

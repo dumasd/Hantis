@@ -9,7 +9,11 @@ import java.sql.SQLException;
 
 public class ClobTypeHandler extends AbstractTypeHandler<String> {
 
-    @Override
+    public ClobTypeHandler() {
+		super(String.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, String parameter) throws SQLException {
         stat.setCharacterStream(pos, new StringReader(parameter));
     }

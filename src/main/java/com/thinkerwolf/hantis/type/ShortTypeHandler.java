@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class ShortTypeHandler extends AbstractTypeHandler<Short> {
 
-    @Override
+    public ShortTypeHandler() {
+		super(Short.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Short parameter) throws SQLException {
         stat.setShort(pos, parameter);
     }

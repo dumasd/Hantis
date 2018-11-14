@@ -43,7 +43,7 @@ public class TypeHandlerRegistry {
         handler = new IntegerTypeHandler();
         register(int.class, handler);
         register(Integer.class, handler);
-        register(JDBCType.INTEGER, handler);
+        register(JDBCType.INT, handler);
 
         // long
         handler = new LongTypeHandler();
@@ -125,7 +125,9 @@ public class TypeHandlerRegistry {
         // char
         register(Character.class, new CharacterTypeHandler());
         register(char.class, new CharacterTypeHandler());
-
+        
+        // null
+        register((Class<?>) null, new NullValueTypeHandler());
     }
 
     public void register(Class<?> clazz, TypeHandler<?> handler) {

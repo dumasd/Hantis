@@ -62,18 +62,18 @@ public abstract class AbstractExecutor implements Executor {
 
 	}
 
-    @Override
-    public void doAfterCommit() throws SQLException {
+	@Override
+	public void doAfterCommit() throws SQLException {
 
-    }
+	}
 
-    @Override
-    public void doAfterRollback() throws SQLException {
+	@Override
+	public void doAfterRollback() throws SQLException {
 
-    }
+	}
 
-    @Override
-    public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
+	@Override
+	public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
 		return queryForList(sql, params, new ResultSetListHandler<>(new ClassRowHander<>(clazz, nameHandler)));
 	}
 
@@ -174,14 +174,14 @@ public abstract class AbstractExecutor implements Executor {
 		}
 	}
 
-    @Override
-    public void close() {
-        cache.clear();
-        doClose();
-    }
+	@Override
+	public void close() {
+		cache.clear();
+		doClose();
+	}
 
-    protected void doClose() {
-    }
+	protected void doClose() {
+	}
 
 	private static class ClassRowHander<T> implements RowHandler<T> {
 		private Class<T> clazz;
@@ -286,7 +286,11 @@ public abstract class AbstractExecutor implements Executor {
 					if (param.getType() != JDBCType.UNKONWN) {
 						handler = configuration.getTypeHandlerRegistry().getHandler(param.getType());
 					} else {
-						handler = configuration.getTypeHandlerRegistry().getHandler(param.getValue().getClass());
+						if (param.getValue() != null) {
+							handler = configuration.getTypeHandlerRegistry().getHandler(param.getValue().getClass());
+						} else {
+							handler = configuration.getTypeHandlerRegistry().getHandler((Class<?>) null);
+						}
 					}
 					handler.setParameter(ps, i + 1, param.getValue(), param.getType());
 				}

@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class ByteTypeHandler extends AbstractTypeHandler<Byte> {
 
-    @Override
+    public ByteTypeHandler() {
+		super(byte.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Byte parameter) throws SQLException {
         stat.setByte(pos, parameter);
     }

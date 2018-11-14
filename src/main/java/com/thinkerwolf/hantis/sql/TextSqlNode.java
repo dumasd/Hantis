@@ -1,6 +1,8 @@
 package com.thinkerwolf.hantis.sql;
 
 import com.thinkerwolf.hantis.common.Param;
+import com.thinkerwolf.hantis.type.JDBCType;
+
 import ognl.Ognl;
 
 import java.util.ArrayList;
@@ -44,7 +46,11 @@ public class TextSqlNode extends AbstractSqlNode {
 		sql.appendSql(this.jdbcSql);
 		for (String expression : expressions) {
 			Object value = Ognl.getValue(expression, sql.getInputParameter());
-			sql.appendParam(new Param(value));
+			if (value != null) {
+				sql.appendParam(new Param(value));
+			} else {
+				sql.appendParam(new Param(JDBCType.OBJECT, value));
+			}
 		}
 		return true;
 	}

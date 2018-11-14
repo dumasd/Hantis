@@ -27,7 +27,7 @@ public class SqlExecutorTest {
 		SqlExecutor sqlExe = new SqlExecutor();
 		sqlExe.setDataSource(ds);
 		Params params = new Params();
-		params.addParam(JDBCType.INTEGER, 3);
+		params.addParam(JDBCType.INT, 3);
 
 		String sql = "select * from blog where id = ? ";
 

@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class SqlDateTypeHandler extends AbstractTypeHandler<Date> {
 
-    @Override
+    public SqlDateTypeHandler() {
+		super(Date.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Date parameter) throws SQLException {
         stat.setDate(pos, parameter);
     }

@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class ObjectTypeHandler extends AbstractTypeHandler<Object> {
 
-    @Override
+    public ObjectTypeHandler() {
+		super(Object.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Object parameter) throws SQLException {
         stat.setObject(pos, parameter);
     }

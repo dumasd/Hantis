@@ -20,10 +20,7 @@ public class SessionFactoryTest {
         cfg.config(resource.getInputStream());
         SessionFactoryBuilder sfb = cfg.getSessionFactoryBuilders().get("development1");
         SessionFactory sf = sfb.build();
-        
         Session session = sf.openSession();
-        //Session session1 = sf.openSession(true);
-
         try {
             Map<String, Object> p = new HashMap<>();
             StopWatch sw = StopWatch.start();
@@ -33,7 +30,6 @@ public class SessionFactoryTest {
             System.out.println(blog);
 
             Blog blog1 = new Blog();
-            //blog1.setId(1000);
             blog1.setTitle("hantis");
             blog1.setContent("hantis_content");
             blog1.setUserId(122);
@@ -42,7 +38,6 @@ public class SessionFactoryTest {
 
 
             Blog blog2 = new Blog();
-            //blog1.setId(1000);
             blog2.setTitle("hantis_t");
             blog2.setContent("hantis_content_t");
             blog2.setUserId(122);
@@ -95,8 +90,6 @@ public class SessionFactoryTest {
             }
             
             */
-            session.commit();
-            //session1.commit();
             
             System.out.println("Spend time : " + sw.end());
         } finally {
@@ -114,10 +107,14 @@ public class SessionFactoryTest {
         SessionFactoryBuilder sfb = cfg.getSessionFactoryBuilders().get("development1");
         SessionFactory sf = sfb.build();
         Session session = sf.openSession();
-
+        
         try {
-
-
+        	for (int i = 0; i < 1000; i++) {
+        		Task task = new Task();
+        		task.setIntro("intro_" + i);
+        		session.create(task);
+        	}
+        	session.commit();
         } finally {
             session.close();
         }

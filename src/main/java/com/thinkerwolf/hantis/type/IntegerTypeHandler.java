@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class IntegerTypeHandler extends AbstractTypeHandler<Integer> {
 
-    @Override
+    public IntegerTypeHandler() {
+		super(Integer.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Integer parameter) throws SQLException {
         stat.setInt(pos, parameter);
     }

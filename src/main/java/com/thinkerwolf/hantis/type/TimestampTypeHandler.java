@@ -7,7 +7,11 @@ import java.sql.Timestamp;
 
 public class TimestampTypeHandler extends AbstractTypeHandler<Timestamp> {
 
-    @Override
+    public TimestampTypeHandler() {
+		super(Timestamp.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Timestamp parameter) throws SQLException {
         stat.setTimestamp(pos, parameter);
     }

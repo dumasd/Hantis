@@ -7,7 +7,11 @@ import java.sql.SQLException;
 
 public class FloatTypeHandler extends AbstractTypeHandler<Float> {
 
-    @Override
+    public FloatTypeHandler() {
+		super(Float.class);
+	}
+
+	@Override
     protected void setNotNullParameter(PreparedStatement stat, int pos, Float parameter) throws SQLException {
         stat.setFloat(pos, parameter);
     }

@@ -30,7 +30,7 @@ public class Configuration {
     private TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
 
     private NameHandler nameHandler = new DefaultNameHandler();
-
+    
     public Properties getProps() {
         return props;
     }
