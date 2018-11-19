@@ -8,12 +8,15 @@ import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
+import com.thinkerwolf.hantis.transaction.ResourceHolder;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
 import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
 import com.thinkerwolf.hantis.type.JDBCType;
 import com.thinkerwolf.hantis.type.TypeHandler;
 
+import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +29,7 @@ import java.util.Map;
 
 public abstract class AbstractExecutor implements Executor {
 
-	private DataSource dataSource;
+    private CommonDataSource dataSource;
 
 	private NameHandler nameHandler = new DefaultNameHandler();
 
@@ -36,12 +39,12 @@ public abstract class AbstractExecutor implements Executor {
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-	public DataSource getDataSource() {
-		return dataSource;
+    public CommonDataSource getDataSource() {
+        return dataSource;
 	}
 
-	public void setDataSource(DataSource dataSource) {
-		this.dataSource = dataSource;
+    public void setDataSource(CommonDataSource dataSource) {
+        this.dataSource = dataSource;
 	}
 
 	public Configuration getConfiguration() {
@@ -157,18 +160,25 @@ public abstract class AbstractExecutor implements Executor {
 	}
 
 	protected Connection getConnection() {
-		JdbcTransactionManager.JdbcResourceHolder resourceHolder = (JdbcTransactionManager.JdbcResourceHolder) TransactionSychronizationManager
-				.getResource(dataSource);
+        ResourceHolder resourceHolder = (ResourceHolder) TransactionSychronizationManager
+                .getResource(dataSource);
 		if (resourceHolder != null) {
 			return resourceHolder.getConnection();
 		} else {
 			try {
-				Connection connection = dataSource.getConnection();
-				resourceHolder = new JdbcTransactionManager.JdbcResourceHolder(dataSource);
-				resourceHolder.setConnection(connection);
-				TransactionSychronizationManager.bindResource(dataSource, resourceHolder);
-				return connection;
-			} catch (SQLException e) {
+                Connection conn;
+                if (dataSource instanceof DataSource) {
+                    DataSource ds = (DataSource) dataSource;
+                    conn = ds.getConnection();
+                    resourceHolder = new JdbcTransactionManager.JdbcResourceHolder(ds);
+                    resourceHolder.setConnection(conn);
+                    TransactionSychronizationManager.bindResource(ds, resourceHolder);
+                } else {
+                    XADataSource xds = (XADataSource) dataSource;
+                    conn = xds.getXAConnection().getConnection();
+                }
+                return conn;
+            } catch (SQLException e) {
 				throw new RuntimeException(e);
 			}
 		}

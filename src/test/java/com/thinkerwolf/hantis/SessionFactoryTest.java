@@ -110,10 +110,10 @@ public class SessionFactoryTest {
         
         try {
         	for (int i = 0; i < 1000; i++) {
-        		Task task = new Task();
-        		task.setIntro("intro_" + i);
-        		session.create(task);
-        	}
+                User user = new User();
+                user.setName("robot_" + i);
+                session.create(user);
+            }
         	session.commit();
         } finally {
             session.close();

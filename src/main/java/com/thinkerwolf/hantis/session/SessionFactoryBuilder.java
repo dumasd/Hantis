@@ -7,7 +7,7 @@ import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.sql.UpdateSqlNode;
 import com.thinkerwolf.hantis.transaction.TransactionManager;
 
-import javax.sql.DataSource;
+import javax.sql.CommonDataSource;
 import java.util.Map;
 
 /**
@@ -16,7 +16,7 @@ import java.util.Map;
 public final class SessionFactoryBuilder {
 
     private String id;
-    private DataSource dataSource;
+    private CommonDataSource dataSource;
     private Map<String, SqlNode> sqlNodeMap;
     private TransactionManager transactionManager;
     private Configuration configuration;
@@ -31,11 +31,11 @@ public final class SessionFactoryBuilder {
         this.id = id;
     }
 
-    public DataSource getDataSource() {
+    public CommonDataSource getDataSource() {
         return dataSource;
     }
 
-    public void setDataSource(DataSource dataSource) {
+    public void setDataSource(CommonDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

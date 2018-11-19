@@ -144,7 +144,7 @@ public class DefaultSession implements Session {
 
 	private Executor createExecutor(ExecutorType executorType) {
 		executorType = executorType == null ? ExecutorType.COMMON : executorType;
-		Executor executor = null;
+		Executor executor;
 		switch (executorType) {
 		case COMMON:
 			executor = new CommonExecutor();

@@ -10,15 +10,18 @@ public class User {
 	/**  */
 	@Id
 	@Column(name = "id")
-	private Integer id;
+    @GeneratedValue
+    private Integer id;
 	
 	/**  */
 	@Column(name = "name")
 	private String name;
 	
 	/**  */
-	@Column(name = "seq")
-	private Integer seq;
+    @Id
+    @Column(name = "seq")
+    @GeneratedValue
+    private Integer seq;
 	
 	
 	public User() {}

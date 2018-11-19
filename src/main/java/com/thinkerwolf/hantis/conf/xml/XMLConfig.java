@@ -23,6 +23,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.sql.DataSource;
+import javax.xml.crypto.Data;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
@@ -248,7 +249,7 @@ public class XMLConfig {
 			Map<String, SessionFactoryBuilder> builderMap = configuration.getSessionFactoryBuilders();
 			for (SessionFactoryBuilder builder : builderMap.values()) {
 				JdbcTransactionManager jdbcTransactionManager = new JdbcTransactionManager();
-				jdbcTransactionManager.setDataSource(builder.getDataSource());
+				jdbcTransactionManager.setDataSource((DataSource) builder.getDataSource());
 				builder.setTransactionManager(jdbcTransactionManager);
 			}
 		}

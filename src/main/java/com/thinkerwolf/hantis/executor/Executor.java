@@ -3,7 +3,7 @@ package com.thinkerwolf.hantis.executor;
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.session.Configuration;
 
-import javax.sql.DataSource;
+import javax.sql.CommonDataSource;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +43,7 @@ public interface Executor {
 
     ExecutorType getType();
 
-    void setDataSource(DataSource dataSource);
+    void setDataSource(CommonDataSource dataSource);
 
     void setConfiguration(Configuration configuration);
 

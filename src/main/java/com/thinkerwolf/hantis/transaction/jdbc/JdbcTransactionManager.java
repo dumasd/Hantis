@@ -172,10 +172,12 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
             return dataSource;
         }
 
+        @Override
         public Connection getConnection() {
             return connection;
         }
 
+        @Override
         public void setConnection(Connection connection) {
             this.connection = connection;
         }

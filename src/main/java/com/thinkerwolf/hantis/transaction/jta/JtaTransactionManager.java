@@ -14,6 +14,11 @@ public class JtaTransactionManager extends AbstractTransactionManager {
 
     @Override
     protected Transaction doGetTransaction(TransactionDefinition defination) {
+        try {
+
+        } catch (Exception e) {
+
+        }
         return null;
     }
 

@@ -51,7 +51,7 @@ public class TransactionSychronizationManager {
      *
      * @author wukai
      */
-    public static interface TransactionSychronization {
+    public interface TransactionSychronization {
         void resume();
 
         void suspend();

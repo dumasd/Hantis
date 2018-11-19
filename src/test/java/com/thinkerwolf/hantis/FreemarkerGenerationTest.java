@@ -82,13 +82,13 @@ public class FreemarkerGenerationTest {
     	TableInfo tableInfo = new TableInfo();
     	tableInfo.setPackageName("com.thinkerwolf.hantis.example");
     	tableInfo.setOutputLocation("src/test/java/com/thinkerwolf/hantis/example");
-    	tableInfo.setTableNames("user,task");
-    	
-    	DBInfo dbInfo = new DBInfo();
+        tableInfo.setTableNames("user");
+
+        DBInfo dbInfo = new DBInfo();
     	dbInfo.setDriver("com.mysql.cj.jdbc.Driver");
     	dbInfo.setUrl("jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC");
         dbInfo.setUser("root");
-        dbInfo.setPassword("123");
+        dbInfo.setPassword("1234");
         dbInfo.setSchameName("test");
         
         TableInfo.generate(tableInfo, dbInfo);
