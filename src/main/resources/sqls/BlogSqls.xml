@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
 <mapping namespace="tableBlog">
     <select id="selectOne" returnType="com.thinkerwolf.hantis.example.Blog"
             parameterType="java.util.Map">

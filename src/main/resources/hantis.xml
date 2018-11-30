@@ -1,39 +1,70 @@
-<configuration>
-    <props>
-        <property name="mysql.driver" value="com.mysql.cj.jdbc.Driver"/>
-        <property name="mysql.url"
-                  value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC"/>
-        <property name="mysql.username" value="root"/>
-        <property name="mysql.password" value="123"/>
-    </props>
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<props>
+		<property name="mysql.driver" value="com.mysql.cj.jdbc.Driver" />
+		<property name="mysql.url"
+			value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
+		<property name="mysql.username" value="root" />
+		<property name="mysql.password" value="123" />
+		<property name="mysql.url_1"
+			value="jdbc:mysql://localhost:3306/test1?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
+	</props>
 
-    <sessionFactories>
-        <transactionManager type="JDBC">
-            <property name="sessionFactories" value="development1,development2"/>
-        </transactionManager>
-        
-        <sessionFactory id="development1">
-        	<executor type="BATCH" />
-           <!--   <dataSource type="POOL">
-                <property name="driver" value="${mysql.driver}"/>
-                <property name="url" value="${mysql.url}"/>
-                <property name="username" value="${mysql.username}"/>
-                <property name="password" value="${mysql.password}"/>
-            </dataSource> -->
-            <dataSource type="POOL">
-                <property name="driver" value="${mysql.driver}"/>
-                <property name="url" value="${mysql.url}"/>
-                <property name="username" value="${mysql.username}"/>
-                <property name="password" value="${mysql.password}"/>
-                <property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource"/>
-                
-            </dataSource>
-            <mappings>
-                <mapping resource="classpath:sqls/*.xml"/>
-                <mapping package="com.thinkerwolf.hantis.*"/>
-            </mappings>
-        </sessionFactory>
+	<sessionFactories>
+		<transactionManager type="ATOMIKOS">
+		</transactionManager>
 
-    </sessionFactories>
+		<sessionFactory id="development1">
+			<executor type="BATCH" />
+			<dataSource type="ATOMIKOS">
+				<property name="driver" value="${mysql.driver}" />
+				<property name="url" value="${mysql.url}" />
+				<property name="username" value="${mysql.username}" />
+				<property name="password" value="${mysql.password}" />
+
+				<property name="transactionTimeout" value="4" />
+				<property name="resourceName" value="db1" />
+				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
+				<property name="xaProperties">
+					<props>
+						<property name="URL" value="${mysql.url}" />
+						<property name="user" value="${mysql.username}" />
+						<property name="password" value="${mysql.password}" />
+					</props>
+				</property>
+
+			</dataSource>
+			<mappings>
+				<mapping resource="classpath:sqls/*.xml" />
+				<mapping package="com.thinkerwolf.hantis.*" />
+			</mappings>
+		</sessionFactory>
+
+		<sessionFactory id="development2">
+			<executor type="BATCH" />
+			<dataSource type="ATOMIKOS">
+				<property name="driver" value="${mysql.driver}" />
+				<property name="url" value="${mysql.url_1}" />
+				<property name="username" value="${mysql.username}" />
+				<property name="password" value="${mysql.password}" />
+				
+				<property name="transactionTimeout" value="4" />
+				<property name="resourceName" value="db2" />
+				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
+				<property name="xaProperties">
+					<props>
+						<property name="URL" value="${mysql.url_1}" />
+						<property name="user" value="${mysql.username}" />
+						<property name="password" value="${mysql.password}" />
+					</props>
+				</property>
+			</dataSource>
+
+			<mappings>
+				<mapping resource="classpath:sqls/*.xml" />
+				<mapping package="com.thinkerwolf.hantis.*" />
+			</mappings>
+		</sessionFactory>
+
+	</sessionFactories>
 
 </configuration>

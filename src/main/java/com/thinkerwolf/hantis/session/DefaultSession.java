@@ -8,9 +8,14 @@ import com.thinkerwolf.hantis.executor.ExecutorType;
 import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.sql.Sql;
 import com.thinkerwolf.hantis.sql.SqlNode;
+import com.thinkerwolf.hantis.transaction.ConnectionHolder;
+import com.thinkerwolf.hantis.transaction.ConnectionUtils;
 import com.thinkerwolf.hantis.transaction.Transaction;
+import com.thinkerwolf.hantis.transaction.TransactionDefinition;
+import com.thinkerwolf.hantis.transaction.TransactionManager;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -18,57 +23,100 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class DefaultSession implements Session {
 
 	private Transaction transaction;
-
-	// private DataSource dataSource;
 
 	private Executor executor;
 
 	private SessionFactoryBuilder builder;
 
+	private TransactionDefinition transactionDefinition;
+
+	private TransactionManager transactionManager;
+
 	private static final Logger logger = LoggerFactory.getLogger(DefaultSession.class);
 
-	public DefaultSession(Transaction transaction, SessionFactoryBuilder builder) {
-		this.transaction = transaction;
+	public DefaultSession(TransactionDefinition transactionDefinition, SessionFactoryBuilder builder) {
+		this.transactionDefinition = transactionDefinition;
 		this.builder = builder;
-		// this.dataSource = builder.getDataSource();
-		// 单个Session持有一个executor
 		this.executor = createExecutor(builder.getExecutorType());
+		this.transactionManager = builder.getTransactionManager();
 	}
 
 	@Override
 	public void close() throws IOException {
 		try {
-			transaction.close();
-            executor.close();
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+			doTransactionClose();
+			executor.close();
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
 	}
 
 	@Override
 	public void commit() {
 		try {
 			executor.doBeforeCommit();
-			transaction.commit();
-            executor.doAfterCommit();
-        } catch (SQLException e) {
-            logger.error("commit", e);
-        }
+			doTransactionCommit();
+			executor.doAfterCommit();
+		} catch (SQLException e) {
+			logger.error("commit", e);
+		}
 	}
 
 	@Override
 	public void rollback() {
 		try {
 			executor.doBeforeRollback();
-			transaction.rollback();
-            executor.doAfterRollback();
-        } catch (SQLException e) {
-			e.printStackTrace();
+			doTransactionRollback();
+			executor.doAfterRollback();
+		} catch (SQLException e) {
+			logger.error("rollback", e);
 		}
+	}
+
+	private void doTransactionCommit() throws SQLException {
+		if (transaction != null) {
+			transactionManager.commit(transaction);
+			return;
+		}
+		ConnectionHolder holder = ConnectionUtils.getConnectionHolder(builder.getDataSource());
+		if (holder != null) {
+			ConnectionUtils.commitConnectionHolder(holder);
+		}
+	}
+
+	private void doTransactionRollback() throws SQLException {
+		if (transaction != null) {
+			transactionManager.rollback(transaction);
+			return;
+		}
+		ConnectionHolder holder = ConnectionUtils.getConnectionHolder(builder.getDataSource());
+		if (holder != null) {
+			ConnectionUtils.rollbackConnectionHolder(holder);
+		}
+	}
+
+	private void doTransactionClose() throws SQLException {
+		if (transaction != null) {
+			transaction.close();
+			return;
+		}
+		Connection conn = ConnectionUtils.getConnection(builder.getDataSource());
+		ConnectionUtils.closeConnection(conn);
+	}
+
+	@Override
+	public Transaction beginTransaction() {
+		return beginTransaction(transactionDefinition);
+	}
+
+	@Override
+	public Transaction beginTransaction(TransactionDefinition transactionDefinition) {
+		this.transaction = builder.getTransactionManager().getTransaction(transactionDefinition);
+		return transaction;
 	}
 
 	@Override
@@ -112,12 +160,19 @@ public class DefaultSession implements Session {
 
 	@Override
 	public <K, V> Map<K, V> selectMap(String mapping, Object parameter) {
-		return null;
+		SqlNode sn = builder.getSqlNode(mapping);
+		Sql sql = new Sql(parameter);
+		try {
+			sn.generate(sql);
+		} catch (Throwable e) {
+			return null;
+		}
+		return (Map<K, V>) executor.queryForOne(sql.getSql(), sql.getParams());
 	}
 
 	@Override
 	public <K, V> Map<K, V> selectMap(String mapping) {
-		return null;
+		return selectMap(mapping, null);
 	}
 
 	@Override
@@ -158,50 +213,51 @@ public class DefaultSession implements Session {
 		}
 		executor.setDataSource(builder.getDataSource());
 		executor.setConfiguration(builder.getConfiguration());
+		executor.setSessionFactoryBuilder(builder);
 		return executor;
 	}
 
-    @Override
-    public <T> List<T> getList(Class<T> clazz, Object parameter) {
-        TableEntity tableEntity = getTableEntity(clazz);
-        Sql sql = tableEntity.parseSelectSql(parameter);
-        return executor.queryForList(sql.getSql(), sql.getParams(), clazz);
-    }
-
-    @Override
-    public <T> T get(Class<T> clazz, Object parameter) {
-        TableEntity tableEntity = getTableEntity(clazz);
-        Sql sql = tableEntity.parseSelectSql(parameter);
-        return executor.queryForOne(sql.getSql(), sql.getParams(), clazz);
-    }
-
-    @Override
-    public <T> int update(T entity) {
-        TableEntity tableEntity = getTableEntity(entity.getClass());
-		Sql sql = tableEntity.parseUpdateSql(executor, entity);
-		return executor.update(sql.getSql(), sql.getParams());
-    }
-
-    @Override
-    public <T> int delete(T entity) {
-        TableEntity tableEntity = getTableEntity(entity.getClass());
-		Sql sql = tableEntity.parseDeleteSql(executor, entity);
-		return executor.update(sql.getSql(), sql.getParams());
-    }
+	@Override
+	public <T> List<T> getList(Class<T> clazz, Object parameter) {
+		TableEntity tableEntity = getTableEntity(clazz);
+		Sql sql = tableEntity.parseSelectSql(parameter);
+		return executor.queryForList(sql.getSql(), sql.getParams(), clazz);
+	}
 
 	@Override
-    public <T> int create(T entity) {
-        TableEntity tableEntity = getTableEntity(entity.getClass());
+	public <T> T get(Class<T> clazz, Object parameter) {
+		TableEntity tableEntity = getTableEntity(clazz);
+		Sql sql = tableEntity.parseSelectSql(parameter);
+		return executor.queryForOne(sql.getSql(), sql.getParams(), clazz);
+	}
+
+	@Override
+	public <T> int update(T entity) {
+		TableEntity tableEntity = getTableEntity(entity.getClass());
+		Sql sql = tableEntity.parseUpdateSql(executor, entity);
+		return executor.update(sql.getSql(), sql.getParams());
+	}
+
+	@Override
+	public <T> int delete(T entity) {
+		TableEntity tableEntity = getTableEntity(entity.getClass());
+		Sql sql = tableEntity.parseDeleteSql(executor, entity);
+		return executor.update(sql.getSql(), sql.getParams());
+	}
+
+	@Override
+	public <T> int create(T entity) {
+		TableEntity tableEntity = getTableEntity(entity.getClass());
 		Sql sql = tableEntity.parseInsertSql(executor, entity);
 		return executor.update(sql.getSql(), sql.getParams());
-    }
+	}
 
-    private TableEntity getTableEntity(Class<?> clazz) {
-        TableEntity tableEntity = builder.getEntityMap().get(clazz.getName());
-        if (tableEntity == null) {
-            throw new RuntimeException("Table entity null");
-        }
-        return tableEntity;
-    }
+	private TableEntity getTableEntity(Class<?> clazz) {
+		TableEntity tableEntity = builder.getEntityMap().get(clazz.getName());
+		if (tableEntity == null) {
+			throw new RuntimeException("Table entity null");
+		}
+		return tableEntity;
+	}
 
 }

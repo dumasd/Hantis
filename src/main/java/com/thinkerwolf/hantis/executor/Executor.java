@@ -2,6 +2,7 @@ package com.thinkerwolf.hantis.executor;
 
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.session.Configuration;
+import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
 
 import javax.sql.CommonDataSource;
 import java.sql.SQLException;
@@ -46,7 +47,9 @@ public interface Executor {
     void setDataSource(CommonDataSource dataSource);
 
     void setConfiguration(Configuration configuration);
-
+    
+    void setSessionFactoryBuilder(SessionFactoryBuilder sessionFactoryBuilder);
+    
     void close();
 
 }

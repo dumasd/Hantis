@@ -6,7 +6,7 @@ import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
-import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager.JdbcResourceHolder;
+import com.thinkerwolf.hantis.transaction.jdbc.JdbcConnectionHolder;
 import com.thinkerwolf.hantis.type.JDBCType;
 import com.thinkerwolf.hantis.type.TypeHandler;
 
@@ -102,7 +102,7 @@ public class SqlExecutor {
     }
 
     protected Connection getConnection() {
-        JdbcResourceHolder resourceHolder = (JdbcResourceHolder) TransactionSychronizationManager
+        JdbcConnectionHolder resourceHolder = (JdbcConnectionHolder) TransactionSychronizationManager
                 .getResource(dataSource);
         if (resourceHolder != null) {
             return resourceHolder.getConnection();

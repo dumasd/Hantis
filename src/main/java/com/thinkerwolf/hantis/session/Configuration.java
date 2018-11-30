@@ -5,6 +5,7 @@ import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.conf.xml.XMLConfig;
 import com.thinkerwolf.hantis.sql.xml.XmlSqlNodeParser;
+import com.thinkerwolf.hantis.transaction.TransactionManager;
 import com.thinkerwolf.hantis.type.TypeHandlerRegistry;
 
 import java.io.InputStream;
@@ -30,6 +31,8 @@ public class Configuration {
     private TypeHandlerRegistry typeHandlerRegistry = new TypeHandlerRegistry();
 
     private NameHandler nameHandler = new DefaultNameHandler();
+    
+    private TransactionManager transactionManager;
     
     public Properties getProps() {
         return props;
@@ -63,7 +66,15 @@ public class Configuration {
         this.nameHandler = nameHandler;
     }
 
-    public Configuration config(String configPath) {
+    public TransactionManager getTransactionManager() {
+		return transactionManager;
+	}
+
+	public void setTransactionManager(TransactionManager transactionManager) {
+		this.transactionManager = transactionManager;
+	}
+
+	public Configuration config(String configPath) {
         try {
             return config(Resources.getResource(configPath).getInputStream());
         } catch (Exception e) {

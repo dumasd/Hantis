@@ -4,8 +4,15 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
-public interface Session extends Closeable, OrmSession {
+import com.thinkerwolf.hantis.transaction.Transaction;
+import com.thinkerwolf.hantis.transaction.TransactionDefinition;
 
+public interface Session extends Closeable, OrmSession {
+	
+	Transaction beginTransaction(TransactionDefinition transactionDefinition);
+	
+	Transaction beginTransaction();
+	
     void commit();
 
     void rollback();

@@ -5,8 +5,8 @@ import com.thinkerwolf.hantis.transaction.DefaultTransactionDefinition;
 import com.thinkerwolf.hantis.transaction.Transaction;
 import com.thinkerwolf.hantis.transaction.TransactionDefinition;
 import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
+import com.thinkerwolf.hantis.transaction.jdbc.JdbcConnectionHolder;
 import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
-import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager.JdbcResourceHolder;
 import org.junit.Test;
 
 import java.sql.Connection;
@@ -30,7 +30,7 @@ public class JdbcTransactionManagerTest {
         TransactionDefinition definition = new DefaultTransactionDefinition();
 
         Transaction transaction = transactionManager.getTransaction(definition);
-        JdbcResourceHolder holder = (JdbcResourceHolder) TransactionSychronizationManager.getResource(ds);
+        JdbcConnectionHolder holder = (JdbcConnectionHolder) TransactionSychronizationManager.getResource(ds);
         Connection conn = holder.getConnection();
         PreparedStatement ps = conn.prepareStatement("UPDATE blog SET title = ?, content = ? WHERE id = ?");
         ps.setString(1, "testTitle9");
@@ -39,7 +39,7 @@ public class JdbcTransactionManagerTest {
         ps.executeUpdate();
 
         Transaction transaction1 = transactionManager.getTransaction(definition);
-        JdbcResourceHolder holder1 = (JdbcResourceHolder) TransactionSychronizationManager.getResource(ds);
+        JdbcConnectionHolder holder1 = (JdbcConnectionHolder) TransactionSychronizationManager.getResource(ds);
         Connection conn1 = holder1.getConnection();
         PreparedStatement ps1 = conn1.prepareStatement("UPDATE blog SET title = ?, content = ? WHERE id = ?");
         ps1.setString(1, "testTitle10");

@@ -8,9 +8,9 @@ import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
-import com.thinkerwolf.hantis.transaction.ResourceHolder;
-import com.thinkerwolf.hantis.transaction.TransactionSychronizationManager;
-import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
+import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
+import com.thinkerwolf.hantis.transaction.ConnectionHolder;
+import com.thinkerwolf.hantis.transaction.ConnectionUtils;
 import com.thinkerwolf.hantis.type.JDBCType;
 import com.thinkerwolf.hantis.type.TypeHandler;
 
@@ -29,22 +29,25 @@ import java.util.Map;
 
 public abstract class AbstractExecutor implements Executor {
 
-    private CommonDataSource dataSource;
+	private CommonDataSource dataSource;
 
 	private NameHandler nameHandler = new DefaultNameHandler();
 
 	private Configuration configuration;
+
+	private SessionFactoryBuilder sessionFactoryBuilder;
+
 	/** 一级查询缓存 */
 	private Cache cache = new SimpleCache();
 
 	protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public CommonDataSource getDataSource() {
-        return dataSource;
+	public CommonDataSource getDataSource() {
+		return dataSource;
 	}
 
-    public void setDataSource(CommonDataSource dataSource) {
-        this.dataSource = dataSource;
+	public void setDataSource(CommonDataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 
 	public Configuration getConfiguration() {
@@ -53,6 +56,10 @@ public abstract class AbstractExecutor implements Executor {
 
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
+	}
+
+	public void setSessionFactoryBuilder(SessionFactoryBuilder sessionFactoryBuilder) {
+		this.sessionFactoryBuilder = sessionFactoryBuilder;
 	}
 
 	@Override
@@ -160,25 +167,28 @@ public abstract class AbstractExecutor implements Executor {
 	}
 
 	protected Connection getConnection() {
-        ResourceHolder resourceHolder = (ResourceHolder) TransactionSychronizationManager
-                .getResource(dataSource);
-		if (resourceHolder != null) {
-			return resourceHolder.getConnection();
+		ConnectionHolder holder = ConnectionUtils.getConnectionHolder(dataSource);
+		if (holder != null) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("The ConnectionHolder exists");
+			}
+			return holder.getConnection();
 		} else {
+			if (logger.isDebugEnabled()) {
+				logger.debug("The ConnectionHolder not exists, generate new ConnectionHolder!");
+			}
 			try {
-                Connection conn;
-                if (dataSource instanceof DataSource) {
-                    DataSource ds = (DataSource) dataSource;
-                    conn = ds.getConnection();
-                    resourceHolder = new JdbcTransactionManager.JdbcResourceHolder(ds);
-                    resourceHolder.setConnection(conn);
-                    TransactionSychronizationManager.bindResource(ds, resourceHolder);
-                } else {
-                    XADataSource xds = (XADataSource) dataSource;
-                    conn = xds.getXAConnection().getConnection();
-                }
-                return conn;
-            } catch (SQLException e) {
+				Connection conn;
+				if (dataSource instanceof DataSource) {
+					DataSource ds = (DataSource) dataSource;
+					conn = ds.getConnection();
+				} else {
+					XADataSource xds = (XADataSource) dataSource;
+					conn = xds.getXAConnection().getConnection();
+				}
+				ConnectionUtils.bindConnection(dataSource, conn, sessionFactoryBuilder.getTransactionManager());
+				return conn;
+			} catch (SQLException e) {
 				throw new RuntimeException(e);
 			}
 		}

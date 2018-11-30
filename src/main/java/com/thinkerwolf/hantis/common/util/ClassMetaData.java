@@ -12,6 +12,9 @@ public class ClassMetaData {
     private Map<String, Method> methodMap = new HashMap<>();
 
     public ClassMetaData(Class<?> clazz) {
+        for (Field field : clazz.getDeclaredFields()) {
+            fieldMap.put(field.getName(), field);
+        }
         for (Field field : clazz.getFields()) {
             fieldMap.put(field.getName(), field);
         }

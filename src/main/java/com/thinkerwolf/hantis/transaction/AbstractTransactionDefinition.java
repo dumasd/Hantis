@@ -28,6 +28,6 @@ public abstract class AbstractTransactionDefinition implements TransactionDefini
 
     @Override
     public boolean isAutoCommit() {
-        return false;
+        return autoCommit;
     }
 }

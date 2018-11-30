@@ -59,6 +59,11 @@ public class ClassUtils {
             }
         }
     }
+    
+    @SuppressWarnings("unchecked")
+	public static <T> T newInstance(String name, Object... args) {
+    	return newInstance((Class<T>) forName(name), args);
+    }
 
     /**
      * 扫描Class文件
