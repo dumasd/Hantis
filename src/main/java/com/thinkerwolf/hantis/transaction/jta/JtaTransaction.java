@@ -38,7 +38,8 @@ public class JtaTransaction implements Transaction {
 
 	@Override
 	public void close() throws SQLException {
-	}
+
+    }
 
 	@Override
 	public boolean isComplete() {

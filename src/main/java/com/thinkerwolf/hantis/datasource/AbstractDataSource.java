@@ -1,5 +1,7 @@
 package com.thinkerwolf.hantis.datasource;
 
+import com.thinkerwolf.hantis.common.Disposable;
+
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.*;
@@ -7,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-public abstract class AbstractDataSource implements DataSource {
+public abstract class AbstractDataSource implements DataSource, Disposable {
 
     private static Map<String, Driver> registriedDrivers = new ConcurrentHashMap<>();
 
@@ -100,4 +102,11 @@ public abstract class AbstractDataSource implements DataSource {
     protected abstract Connection doGetConnection() throws SQLException;
 
     protected abstract Connection doGetConnection(String username, String password) throws SQLException;
+
+    protected abstract void doClose() throws Exception;
+
+    @Override
+    public void destory() throws Exception {
+        doClose();
+    }
 }

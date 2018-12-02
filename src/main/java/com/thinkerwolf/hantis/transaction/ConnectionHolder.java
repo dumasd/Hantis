@@ -7,23 +7,16 @@ public abstract class ConnectionHolder implements ResourceHolder {
 
 	private boolean previousAutoCommit;
 	
-	private boolean readOnly;
-	
 	private Connection conn;
 
 	public ConnectionHolder(Connection conn) {
 		this.conn = conn;
 	}
 
-	@Override
 	public Connection getConnection() {
 		return conn;
 	}
 
-	@Override
-	public void setConnection(Connection connection) {
-
-	}
 
 	public int getPreviousIsolationLevel() {
 		return previousIsolationLevel;
@@ -41,12 +34,5 @@ public abstract class ConnectionHolder implements ResourceHolder {
 		this.previousAutoCommit = previousAutoCommit;
 	}
 
-	public boolean isReadOnly() {
-		return readOnly;
-	}
-
-	public void setReadOnly(boolean readOnly) {
-		this.readOnly = readOnly;
-	}
 	
 }

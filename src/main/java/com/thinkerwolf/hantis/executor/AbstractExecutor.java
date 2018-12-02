@@ -186,7 +186,8 @@ public abstract class AbstractExecutor implements Executor {
 					XADataSource xds = (XADataSource) dataSource;
 					conn = xds.getXAConnection().getConnection();
 				}
-				ConnectionUtils.bindConnection(dataSource, conn, sessionFactoryBuilder.getTransactionManager());
+				conn.setAutoCommit(false);
+				ConnectionUtils.bindConnection(dataSource, conn, configuration.getTransactionManager());
 				return conn;
 			} catch (SQLException e) {
 				throw new RuntimeException(e);

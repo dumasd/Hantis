@@ -18,7 +18,6 @@ public final class SessionFactoryBuilder {
     private String id;
     private CommonDataSource dataSource;
     private Map<String, SqlNode> sqlNodeMap;
-    private TransactionManager transactionManager;
     private Configuration configuration;
     private ExecutorType executorType;
     private Map<String, TableEntity<?>> entityMap;
@@ -39,10 +38,6 @@ public final class SessionFactoryBuilder {
         this.dataSource = dataSource;
     }
 
-    public Map<String, SqlNode> getSqlNodeMap() {
-        return sqlNodeMap;
-    }
-
     public void setSqlNodeMap(Map<String, SqlNode> sqlNodeMap) {
         this.sqlNodeMap = sqlNodeMap;
     }
@@ -53,14 +48,6 @@ public final class SessionFactoryBuilder {
 
     public void setEntityMap(Map<String, TableEntity<?>> entityMap) {
         this.entityMap = entityMap;
-    }
-
-    public TransactionManager getTransactionManager() {
-        return transactionManager;
-    }
-
-    public void setTransactionManager(TransactionManager transactionManager) {
-        this.transactionManager = transactionManager;
     }
 
     public Configuration getConfiguration() {
@@ -78,22 +65,6 @@ public final class SessionFactoryBuilder {
 	public void setExecutorType(ExecutorType executorType) {
 		this.executorType = executorType;
 	}
-
-	public SelectSqlNode getSelectSqlNode(String mapping) {
-        SqlNode sqlNode = getSqlNode(mapping);
-        if (!(sqlNode instanceof SelectSqlNode)) {
-            throw new RuntimeException("[" + mapping + "] isn't a select sql node");
-        }
-        return (SelectSqlNode) sqlNode;
-    }
-
-    public UpdateSqlNode getUpdateSqlNode(String mapping) {
-        SqlNode sqlNode = getSqlNode(mapping);
-        if (!(sqlNode instanceof UpdateSqlNode)) {
-            throw new RuntimeException("[" + mapping + "] isn't a select sql node");
-        }
-        return (UpdateSqlNode) sqlNode;
-    }
 
     public SqlNode getSqlNode(String mapping) {
         SqlNode sqlNode = sqlNodeMap.get(mapping);

@@ -15,23 +15,19 @@ public class SessionFactoryTest {
 
     @Test
     public void sessionTest() throws IOException {
-        Resource resource = new ClassPathResource("hantis.xml");
+        Resource resource = new ClassPathResource("hantis_jdbc.xml");
         Configuration cfg = new Configuration();
         cfg.config(resource.getInputStream());
-        SessionFactoryBuilder sfb1 = cfg.getSessionFactoryBuilders().get("development1");
-       // SessionFactoryBuilder sfb2 = cfg.getSessionFactoryBuilders().get("development2");
+        SessionFactoryBuilder sfb1 = cfg.getSessionFactoryBuilder("development1");
         SessionFactory sf1 = sfb1.build();
-       // SessionFactory sf2 = sfb2.build();
-        
+
         Session session = sf1.openSession();
-       // session.beginTransaction();
-        
-      //  sf2.openSession();
-        
         
         try {
             Map<String, Object> p = new HashMap<>();
             StopWatch sw = StopWatch.start();
+            session.beginTransaction();
+
 
             p.put("id", "3");
             Blog blog = session.get(Blog.class, p);
@@ -112,7 +108,7 @@ public class SessionFactoryTest {
         Resource resource = new ClassPathResource("hantis.xml");
         Configuration cfg = new Configuration();
         cfg.config(resource.getInputStream());
-        SessionFactoryBuilder sfb = cfg.getSessionFactoryBuilders().get("development1");
+        SessionFactoryBuilder sfb = cfg.getSessionFactoryBuilder("development1");
         SessionFactory sf = sfb.build();
         Session session = sf.openSession();
         

@@ -42,7 +42,7 @@ public class DefaultSession implements Session {
 		this.transactionDefinition = transactionDefinition;
 		this.builder = builder;
 		this.executor = createExecutor(builder.getExecutorType());
-		this.transactionManager = builder.getTransactionManager();
+		this.transactionManager = builder.getConfiguration().getTransactionManager();
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class DefaultSession implements Session {
 
 	@Override
 	public Transaction beginTransaction(TransactionDefinition transactionDefinition) {
-		this.transaction = builder.getTransactionManager().getTransaction(transactionDefinition);
+		this.transaction = transactionManager.getTransaction(transactionDefinition);
 		return transaction;
 	}
 

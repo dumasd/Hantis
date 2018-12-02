@@ -54,11 +54,39 @@
             <version>4.3.10.RELEASE</version>
         </dependency>
 
+        <dependency>
+            <groupId>javax.transaction</groupId>
+            <artifactId>javax.transaction-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.atteo.moonshine/atomikos -->
         <dependency>
-            <groupId>org.atteo.moonshine</groupId>
-            <artifactId>atomikos</artifactId>
-            <version>1.2</version>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jms</artifactId>
+            <version>4.0.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jta</artifactId>
+            <version>4.0.6</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>geronimo-jta_1.0.1B_spec</artifactId>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jdbc</artifactId>
+            <version>4.0.6</version>
         </dependency>
 
         <dependency>

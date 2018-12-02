@@ -32,4 +32,9 @@ public abstract class AbstractJdbcDataSource extends AbstractDataSource {
     public void setUrl(String url) {
         this.url = url;
     }
+
+    @Override
+    protected void doClose() throws Exception {
+
+    }
 }

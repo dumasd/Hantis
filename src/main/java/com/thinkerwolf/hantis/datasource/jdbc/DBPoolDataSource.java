@@ -54,15 +54,7 @@ public class DBPoolDataSource extends AbstractJdbcDataSource {
         throw new UnsupportedOperationException("");
     }
 
-	/*
-     * private Properties createProps(String username, String password) {
-	 * Properties props = new Properties(); props.setProperty("driver", driver);
-	 * props.setProperty("username", username); props.setProperty("password",
-	 * password); props.setProperty("url", url); props.setProperty("minConn",
-	 * String.valueOf(minConn)); props.setProperty("maxConn",
-	 * String.valueOf(maxConn)); props.setProperty("poolName", poolName); return
-	 * props; }
-	 */
+
 
     public int getMinConn() {
         return minConn;
@@ -89,20 +81,8 @@ public class DBPoolDataSource extends AbstractJdbcDataSource {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        // 被回收时强制将连接池关闭
-        forceClose();
-        super.finalize();
-    }
-
-    private void forceClose() {
-        if (pool != null) {
-            try {
-                pool.close();
-            } catch (Exception e) {
-                // ingore
-            }
-        }
+    protected void doClose() throws Exception {
+        pool.close();
     }
 
 }

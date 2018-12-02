@@ -4,13 +4,14 @@
 		<property name="mysql.url"
 			value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
 		<property name="mysql.username" value="root" />
-		<property name="mysql.password" value="123" />
+		<property name="mysql.password" value="1234"/>
 		<property name="mysql.url_1"
 			value="jdbc:mysql://localhost:3306/test1?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
 	</props>
 
 	<sessionFactories>
 		<transactionManager type="ATOMIKOS">
+			<property name="transactionTimeout" value="300"/>
 		</transactionManager>
 
 		<sessionFactory id="development1">
@@ -21,8 +22,8 @@
 				<property name="username" value="${mysql.username}" />
 				<property name="password" value="${mysql.password}" />
 
-				<property name="transactionTimeout" value="4" />
-				<property name="resourceName" value="db1" />
+
+				<property name="resourceName" value="db1"/>
 				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
 				<property name="xaProperties">
 					<props>
@@ -46,9 +47,8 @@
 				<property name="url" value="${mysql.url_1}" />
 				<property name="username" value="${mysql.username}" />
 				<property name="password" value="${mysql.password}" />
-				
-				<property name="transactionTimeout" value="4" />
-				<property name="resourceName" value="db2" />
+
+				<property name="resourceName" value="db2"/>
 				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
 				<property name="xaProperties">
 					<props>

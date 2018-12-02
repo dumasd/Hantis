@@ -19,7 +19,7 @@
 
     <update id="updateOne" parameterType="java.util.Map">
         update blog set title =
-        #{title}, content = #{content}
+        #{title}
         where id = #{id}
     </update>
 

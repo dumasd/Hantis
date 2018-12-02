@@ -70,19 +70,7 @@ public class DBXAPoolDataSource extends AbstractXADataSource {
     }
 
     @Override
-    protected void finalize() throws Throwable {
-        // 被回收时强制将连接池关闭
-        forceClose();
-        super.finalize();
-    }
-
-    private void forceClose() {
-        if (pool != null) {
-            try {
-                pool.close();
-            } catch (Exception e) {
-                // ingore
-            }
-        }
+    protected void doClose() throws Exception {
+        pool.close();
     }
 }

@@ -17,10 +17,14 @@ import com.thinkerwolf.hantis.transaction.jta.JtaTransactionManager;
  */
 public class AtomikosTransactionManager extends JtaTransactionManager {
 
+    com.atomikos.icatch.config.UserTransactionService uts =
+            new com.atomikos.icatch.config.UserTransactionServiceImp();
+
 	@Override
 	protected TransactionManager retrieveTransactionManager() throws TransactionException {
-		return new UserTransactionManager();
-	}
+
+        return new UserTransactionManager();
+    }
 
 	@Override
 	protected UserTransaction retrieveUserTransaction() throws TransactionException {

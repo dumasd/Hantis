@@ -56,8 +56,9 @@ public class JtaTransactionManager extends AbstractTransactionManager {
 		JtaTransaction jtaTransaction = getJtaTransaction(transaction);
 		try {
 			jtaTransaction.getUserTransaction().begin();
-		} catch (Throwable e) {
-			throw new TransactionException(e);
+            //transactionManager.begin();
+        } catch (Throwable e) {
+            throw new TransactionException(e);
 		}
 	}
 
@@ -66,8 +67,9 @@ public class JtaTransactionManager extends AbstractTransactionManager {
 		JtaTransaction jtaTransaction = getJtaTransaction(transaction);
 		try {
 			jtaTransaction.getUserTransaction().commit();
-		} catch (Throwable e) {
-			throw new TransactionException(e);
+            //transactionManager.commit();
+        } catch (Throwable e) {
+            throw new TransactionException(e);
 		}
 	}
 
@@ -158,9 +160,12 @@ public class JtaTransactionManager extends AbstractTransactionManager {
 	}
 
 	@Override
-	public ConnectionHolder createResourceHolder(Connection connection) throws SQLException {
-		JtaConnectionHolder holder = new JtaConnectionHolder(connection);
-		return holder;
-	}
+    public ConnectionHolder doCreateResourceHolder(Connection connection) throws SQLException {
+        return new JtaConnectionHolder(connection);
+    }
 
+    @Override
+    public boolean isDistributed() {
+        return true;
+    }
 }

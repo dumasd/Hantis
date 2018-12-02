@@ -1,6 +1,12 @@
 package com.thinkerwolf.hantis.transaction.jta.atomikos;
 
-public class AtomikosDataSourceBean extends com.atomikos.jdbc.AtomikosDataSourceBean {
+import com.thinkerwolf.hantis.common.Disposable;
+import com.thinkerwolf.hantis.common.Initializing;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+
+public class AtomikosDataSourceBean extends com.atomikos.jdbc.AtomikosDataSourceBean implements Initializing, Disposable {
 
 	/**
 	 * 
@@ -18,4 +24,25 @@ public class AtomikosDataSourceBean extends com.atomikos.jdbc.AtomikosDataSource
 		setUniqueResourceName(resourceName);
 	}
 
+    @Override
+    public void afterPropertiesSet() throws Throwable {
+        setMinPoolSize(2);
+        setMaxPoolSize(4);
+        //setConcurrentConnectionValidation(false);
+        init();
+    }
+
+    @Override
+    public void destory() throws Exception {
+        close();
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        int t = 1;
+        t++;
+
+        return super.getConnection();
+
+    }
 }

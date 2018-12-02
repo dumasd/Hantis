@@ -14,12 +14,12 @@ public class ConnectionUtils {
 
 	public static Connection getConnection(CommonDataSource dataSource) {
 		Object obj = TransactionSychronizationManager.getResource(dataSource);
-		if (obj == null || !(obj instanceof ResourceHolder)) {
-			return null;
-		}
-		ResourceHolder holder = (ResourceHolder) obj;
-		return holder.getConnection();
-	}
+        if (obj == null || !(obj instanceof ConnectionHolder)) {
+            return null;
+        }
+        ConnectionHolder holder = (ConnectionHolder) obj;
+        return holder.getConnection();
+    }
 
 	public static void commitConnection(Connection conn) throws SQLException {
 		if (!conn.getAutoCommit()) {
@@ -51,21 +51,21 @@ public class ConnectionUtils {
 
 	public static void commitConnectionHolder(ConnectionHolder holder) throws SQLException {
 		try {
-			rollbackConnection(holder.getConnection());
-		} catch (Exception e) {
-
-		} finally {
-			clearAfterCommitOrRollback(holder);
+            commitConnection(holder.getConnection());
+        } catch (Exception e) {
+            //throw new SQLException(e);
+        } finally {
+            clearAfterCommitOrRollback(holder);
 		}
 	}
 
 	public static void rollbackConnectionHolder(ConnectionHolder holder) throws SQLException {
 		try {
-			commitConnection(holder.getConnection());
-		} catch (Exception e) {
-
-		} finally {
-			clearAfterCommitOrRollback(holder);
+            rollbackConnection(holder.getConnection());
+        } catch (Exception e) {
+            //throw new SQLException(e);
+        } finally {
+            clearAfterCommitOrRollback(holder);
 		}
 	}
 

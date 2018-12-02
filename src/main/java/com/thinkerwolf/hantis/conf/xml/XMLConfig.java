@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.conf.xml;
 
+import com.thinkerwolf.hantis.common.Initializing;
 import com.thinkerwolf.hantis.common.io.Resource;
 import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.common.util.ClassUtils;
@@ -7,6 +8,7 @@ import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.common.util.ReflectionUtils;
 import com.thinkerwolf.hantis.common.util.StringUtils;
 import com.thinkerwolf.hantis.conf.HantisConfigException;
+import com.thinkerwolf.hantis.conf.ShutdownHook;
 import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
 import com.thinkerwolf.hantis.datasource.jdbc.DBUnpoolDataSource;
 import com.thinkerwolf.hantis.executor.ExecutorType;
@@ -79,24 +81,40 @@ public class XMLConfig {
 
 			Element sessionFactoriesEl = (Element) doc.getElementsByTagName("sessionFactories").item(0);
 
-			// 解析transactionManager
-			NodeList tmNl = doc.getElementsByTagName("transactionManager");
-			parseTransactionManager(tmNl.getLength() > 0 ? (Element) tmNl.item(0) : null);
+            // 解析transactionManager
+            NodeList tmNl = doc.getElementsByTagName("transactionManager");
+            parseTransactionManager(tmNl.getLength() > 0 ? (Element) tmNl.item(0) : null);
 
-			// 解析sessionFactory
-			NodeList sessionFactoryNodeList = sessionFactoriesEl.getElementsByTagName("sessionFactory");
-			for (int i = 0, len = sessionFactoryNodeList.getLength(); i < len; i++) {
+            // 解析sessionFactory，当TransactionManager未Jdbc时，只解析一个sessionFactory
+            NodeList sessionFactoryNodeList = sessionFactoriesEl.getElementsByTagName("sessionFactory");
+            for (int i = 0, len = sessionFactoryNodeList.getLength(); i < len; i++) {
 				parseSessionFactory((Element) sessionFactoryNodeList.item(i));
-				if (configuration.getTransactionManager() instanceof JdbcTransactionManager) {
-					break;
-				}
+                if (!configuration.getTransactionManager().isDistributed()) {
+                    break;
+                }
 			}
 
-		} catch (Exception e) {
-			throw new HantisConfigException("Can't parse config, have a exception", e);
-		}
+            doAfterParse(configuration);
+
+            Runtime.getRuntime().addShutdownHook(new ShutdownHook(configuration));
+
+        } catch (Throwable e) {
+            throw new HantisConfigException("Can't parse config, have a exception", e);
+        }
 
 	}
+
+    private void doAfterParse(Configuration configuration) throws Throwable {
+        configuration.getTransactionManager().afterPropertiesSet();
+
+        for (SessionFactoryBuilder builder : configuration.getAllSessionFactoryBuilder()) {
+            if (!configuration.getTransactionManager().isDistributed()) {
+                ((JdbcTransactionManager) configuration.getTransactionManager()).setDataSource((DataSource) builder.getDataSource());
+            }
+        }
+
+    }
+
 
 	private void parseProps(Element el) {
 		NodeList propNode = el.getChildNodes();
@@ -120,6 +138,14 @@ public class XMLConfig {
 		Element dataSourceEl = (Element) el.getElementsByTagName("dataSource").item(0);
 		CommonDataSource dataSource = parseDataSource(dataSourceEl);
 
+        if (dataSource instanceof Initializing) {
+            try {
+                ((Initializing) dataSource).afterPropertiesSet();
+            } catch (Throwable throwable) {
+                throw new HantisConfigException(throwable);
+            }
+        }
+
 		// 解析mapping
 		Map<String, SqlNode> sqlNodeMap = new HashMap<>();
 		Map<String, TableEntity<?>> tableEntityMap = new HashMap<>();
@@ -136,22 +162,20 @@ public class XMLConfig {
 		builder.setEntityMap(tableEntityMap);
 		builder.setConfiguration(configuration);
 		builder.setExecutorType(executorType);
-		builder.setTransactionManager(configuration.getTransactionManager());
-		if (configuration.getTransactionManager() instanceof JdbcTransactionManager) {
-			((JdbcTransactionManager) configuration.getTransactionManager()).setDataSource((DataSource) dataSource);
-		}
 		configuration.putSessionFactoryBuilder(builder);
-		return builder;
-	}
+
+
+        return builder;
+    }
 
 	private CommonDataSource parseDataSource(Element el) {
 		String dataSourceType = el.getAttribute("type");
 		if (StringUtils.isEmpty(dataSourceType)) {
 			throw new HantisConfigException("dataSource type is null");
 		}
-		CommonDataSource dataSource = null;
-		if (ALIAS_POOL.equals(dataSourceType)) {
-			dataSource = new DBPoolDataSource();
+        CommonDataSource dataSource;
+        if (ALIAS_POOL.equals(dataSourceType)) {
+            dataSource = new DBPoolDataSource();
 		} else if (ALIAS_UNPOOL.equals(dataSourceType)) {
 			dataSource = new DBUnpoolDataSource();
 		} else if (ALIAS_ATOMIKOS.equals(dataSourceType)) {
@@ -184,9 +208,9 @@ public class XMLConfig {
 						try {
 							sqlNodeMap.putAll(configuration.getParser().parse(r.getInputStream()));
 						} catch (Throwable e) {
-							e.printStackTrace();
-						}
-					}
+                            throw new HantisConfigException(e);
+                        }
+                    }
 				}
 			}
 
@@ -232,7 +256,11 @@ public class XMLConfig {
 	}
 
 	private void parseTransactionManager(Element el) {
-		String type = el.getAttribute("type");
+        if (el == null) {
+            configuration.setTransactionManager(new JdbcTransactionManager());
+            return;
+        }
+        String type = el.getAttribute("type");
 
 		if (StringUtils.isEmpty(type)) {
 			throw new HantisConfigException("TransactionManager type is null");
@@ -248,11 +276,6 @@ public class XMLConfig {
 			transactionManager = ClassUtils.newInstance(type);
 		}
 		PropertyUtils.setProperties(transactionManager, props);
-		try {
-			transactionManager.afterPropertiesSet();
-		} catch (Throwable e) {
-			throw new HantisConfigException(e);
-		}
 		configuration.setTransactionManager(transactionManager);
 	}
 

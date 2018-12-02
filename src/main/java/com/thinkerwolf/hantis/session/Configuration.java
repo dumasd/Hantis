@@ -9,9 +9,7 @@ import com.thinkerwolf.hantis.transaction.TransactionManager;
 import com.thinkerwolf.hantis.type.TypeHandlerRegistry;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Project configuration
@@ -50,8 +48,12 @@ public class Configuration {
         sessionFactoryBuilders.putIfAbsent(builder.getId(), builder);
     }
 
-    public Map<String, SessionFactoryBuilder> getSessionFactoryBuilders() {
-        return sessionFactoryBuilders;
+    public List<SessionFactoryBuilder> getAllSessionFactoryBuilder() {
+        return new ArrayList<>(sessionFactoryBuilders.values());
+    }
+
+    public SessionFactoryBuilder getSessionFactoryBuilder(String sfbName) {
+        return sessionFactoryBuilders.get(sfbName);
     }
 
     public TypeHandlerRegistry getTypeHandlerRegistry() {

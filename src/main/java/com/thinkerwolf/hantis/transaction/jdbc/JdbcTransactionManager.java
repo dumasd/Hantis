@@ -84,9 +84,9 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
 		try {
 			transaction.rollback();
 		} catch (SQLException e) {
-			throw new TransactionException("rollback errot");
-		}
-	}
+            throw new TransactionException("rollback error");
+        }
+    }
 
 	@Override
 	protected void doClearAfterCompletion(Transaction transaction) {
@@ -103,16 +103,17 @@ public class JdbcTransactionManager extends AbstractTransactionManager {
 	}
 
 	@Override
-	public ConnectionHolder createResourceHolder(Connection connection) throws SQLException {
-		JdbcConnectionHolder holder = new JdbcConnectionHolder(connection, dataSource);
-		holder.setPreviousIsolationLevel(connection.getTransactionIsolation());
-		holder.setPreviousAutoCommit(connection.getAutoCommit());
-		return holder;
-	}
+    public ConnectionHolder doCreateResourceHolder(Connection connection) throws SQLException {
+        return new JdbcConnectionHolder(connection, dataSource);
+    }
 
 	@Override
 	public void afterPropertiesSet() throws Throwable {
 		// nothing
 	}
 
+    @Override
+    public boolean isDistributed() {
+        return false;
+    }
 }

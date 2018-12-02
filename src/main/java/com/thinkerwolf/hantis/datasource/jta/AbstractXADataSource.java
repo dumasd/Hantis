@@ -84,4 +84,8 @@ public abstract class AbstractXADataSource extends AbstractDataSource implements
         return getXAConnection().getConnection();
     }
 
+    @Override
+    protected void doClose() throws Exception {
+
+    }
 }

@@ -3,6 +3,8 @@ package com.thinkerwolf.hantis.transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -161,6 +163,19 @@ public abstract class AbstractTransactionManager implements TransactionManager {
     protected abstract void doRollback(Transaction transaction) throws TransactionException;
 
     protected abstract void doClearAfterCompletion(Transaction transaction) throws TransactionException;
+
+    @Override
+    public ConnectionHolder createResourceHolder(Connection conn) throws SQLException {
+        ConnectionHolder holder = doCreateResourceHolder(conn);
+        if (holder == null) {
+            throw new SQLException("Holder null");
+        }
+        holder.setPreviousIsolationLevel(conn.getTransactionIsolation());
+        holder.setPreviousAutoCommit(conn.getAutoCommit());
+        return holder;
+    }
+
+    protected abstract ConnectionHolder doCreateResourceHolder(Connection conn) throws SQLException;
 
     @Override
     public String getName() {

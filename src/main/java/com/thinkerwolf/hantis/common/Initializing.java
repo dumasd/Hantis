@@ -1,6 +1,6 @@
 package com.thinkerwolf.hantis.common;
 
-public interface Initialized {
+public interface Initializing {
 
 	void afterPropertiesSet() throws Throwable;
 
