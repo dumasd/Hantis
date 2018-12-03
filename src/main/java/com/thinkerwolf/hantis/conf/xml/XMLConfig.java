@@ -105,14 +105,12 @@ public class XMLConfig {
 	}
 
     private void doAfterParse(Configuration configuration) throws Throwable {
-        configuration.getTransactionManager().afterPropertiesSet();
-
         for (SessionFactoryBuilder builder : configuration.getAllSessionFactoryBuilder()) {
             if (!configuration.getTransactionManager().isDistributed()) {
                 ((JdbcTransactionManager) configuration.getTransactionManager()).setDataSource((DataSource) builder.getDataSource());
             }
         }
-
+        configuration.getTransactionManager().afterPropertiesSet();
     }
 
 

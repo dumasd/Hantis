@@ -4,14 +4,16 @@
 		<property name="mysql.url"
 			value="jdbc:mysql://localhost:3306/test?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
 		<property name="mysql.username" value="root" />
-		<property name="mysql.password" value="1234"/>
+		<property name="mysql.password" value="123" />
 		<property name="mysql.url_1"
 			value="jdbc:mysql://localhost:3306/test1?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
+		<property name="mysql.url_2"
+			value="jdbc:mysql://localhost:3306/test2?useUnicode=true&amp;characterEncoding=utf8&amp;serverTimezone=UTC" />
 	</props>
 
 	<sessionFactories>
 		<transactionManager type="ATOMIKOS">
-			<property name="transactionTimeout" value="300"/>
+			<property name="transactionTimeout" value="300" />
 		</transactionManager>
 
 		<sessionFactory id="development1">
@@ -23,7 +25,7 @@
 				<property name="password" value="${mysql.password}" />
 
 
-				<property name="resourceName" value="db1"/>
+				<property name="resourceName" value="db1" />
 				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
 				<property name="xaProperties">
 					<props>
@@ -48,7 +50,7 @@
 				<property name="username" value="${mysql.username}" />
 				<property name="password" value="${mysql.password}" />
 
-				<property name="resourceName" value="db2"/>
+				<property name="resourceName" value="db2" />
 				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
 				<property name="xaProperties">
 					<props>
@@ -64,7 +66,30 @@
 				<mapping package="com.thinkerwolf.hantis.*" />
 			</mappings>
 		</sessionFactory>
+		<sessionFactory id="development3">
+			<executor type="BATCH" />
+			<dataSource type="ATOMIKOS">
+				<property name="driver" value="${mysql.driver}" />
+				<property name="url" value="${mysql.url_2}" />
+				<property name="username" value="${mysql.username}" />
+				<property name="password" value="${mysql.password}" />
 
+				<property name="resourceName" value="db3" />
+				<property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource" />
+				<property name="xaProperties">
+					<props>
+						<property name="URL" value="${mysql.url_2}" />
+						<property name="user" value="${mysql.username}" />
+						<property name="password" value="${mysql.password}" />
+					</props>
+				</property>
+			</dataSource>
+
+			<mappings>
+				<mapping resource="classpath:sqls/*.xml" />
+				<mapping package="com.thinkerwolf.hantis.*" />
+			</mappings>
+		</sessionFactory>
 	</sessionFactories>
 
 </configuration>

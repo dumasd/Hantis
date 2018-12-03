@@ -8,7 +8,6 @@ import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
-import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
 import com.thinkerwolf.hantis.transaction.ConnectionHolder;
 import com.thinkerwolf.hantis.transaction.ConnectionUtils;
 import com.thinkerwolf.hantis.type.JDBCType;
@@ -35,8 +34,6 @@ public abstract class AbstractExecutor implements Executor {
 
 	private Configuration configuration;
 
-	private SessionFactoryBuilder sessionFactoryBuilder;
-
 	/** 一级查询缓存 */
 	private Cache cache = new SimpleCache();
 
@@ -56,10 +53,6 @@ public abstract class AbstractExecutor implements Executor {
 
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
-	}
-
-	public void setSessionFactoryBuilder(SessionFactoryBuilder sessionFactoryBuilder) {
-		this.sessionFactoryBuilder = sessionFactoryBuilder;
 	}
 
 	@Override

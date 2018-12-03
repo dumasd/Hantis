@@ -2,10 +2,7 @@ package com.thinkerwolf.hantis.session;
 
 import com.thinkerwolf.hantis.executor.ExecutorType;
 import com.thinkerwolf.hantis.orm.TableEntity;
-import com.thinkerwolf.hantis.sql.SelectSqlNode;
 import com.thinkerwolf.hantis.sql.SqlNode;
-import com.thinkerwolf.hantis.sql.UpdateSqlNode;
-import com.thinkerwolf.hantis.transaction.TransactionManager;
 
 import javax.sql.CommonDataSource;
 import java.util.Map;

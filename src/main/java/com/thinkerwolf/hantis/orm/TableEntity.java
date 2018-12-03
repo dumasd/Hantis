@@ -3,7 +3,7 @@ package com.thinkerwolf.hantis.orm;
 import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.thinkerwolf.hantis.common.NameHandler;
@@ -32,8 +32,8 @@ public class TableEntity<T> implements Closeable {
 	private NameHandler nameHandler;
 	/** 数据库表名 */
 	private String tableName;
-	/** 列 columnName:TableColumn */
-	private Map<String, TableColumn> tableColumnMap = new HashMap<>();
+	/** columnName -> TableColumn */
+	private Map<String, TableColumn> tableColumnMap = new LinkedHashMap<>();
 
 	private String updateSql;
 

@@ -98,4 +98,5 @@ public class BatchExecutor extends AbstractExecutor {
         }
         batchStatments.clear();
     }
+
 }

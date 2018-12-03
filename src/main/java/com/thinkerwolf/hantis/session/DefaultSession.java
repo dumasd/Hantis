@@ -82,6 +82,9 @@ public class DefaultSession implements Session {
 			transactionManager.commit(transaction);
 			return;
 		}
+		if (transactionManager.isDistributed()) { 
+			return;
+		}
 		ConnectionHolder holder = ConnectionUtils.getConnectionHolder(builder.getDataSource());
 		if (holder != null) {
 			ConnectionUtils.commitConnectionHolder(holder);
@@ -93,6 +96,9 @@ public class DefaultSession implements Session {
 			transactionManager.rollback(transaction);
 			return;
 		}
+		if (transactionManager.isDistributed()) { 
+			return;
+		}
 		ConnectionHolder holder = ConnectionUtils.getConnectionHolder(builder.getDataSource());
 		if (holder != null) {
 			ConnectionUtils.rollbackConnectionHolder(holder);
@@ -102,6 +108,9 @@ public class DefaultSession implements Session {
 	private void doTransactionClose() throws SQLException {
 		if (transaction != null) {
 			transaction.close();
+			return;
+		}
+		if (transactionManager.isDistributed()) { 
 			return;
 		}
 		Connection conn = ConnectionUtils.getConnection(builder.getDataSource());
@@ -213,7 +222,7 @@ public class DefaultSession implements Session {
 		}
 		executor.setDataSource(builder.getDataSource());
 		executor.setConfiguration(builder.getConfiguration());
-		executor.setSessionFactoryBuilder(builder);
+		// executor.setSessionFactoryBuilder(builder);
 		return executor;
 	}
 
