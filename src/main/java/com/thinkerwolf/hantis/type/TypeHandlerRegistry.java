@@ -128,6 +128,11 @@ public class TypeHandlerRegistry {
         
         // null
         register((Class<?>) null, new NullValueTypeHandler());
+        
+        // object
+        handler = new ObjectTypeHandler();
+        register(JDBCType.OBJECT, handler);
+        register(Object.class, handler);
     }
 
     public void register(Class<?> clazz, TypeHandler<?> handler) {

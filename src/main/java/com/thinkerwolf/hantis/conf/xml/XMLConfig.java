@@ -265,7 +265,7 @@ public class XMLConfig {
 		}
 		Properties props = parseElementProps(el);
 
-		TransactionManager transactionManager = null;
+		TransactionManager transactionManager;
 		if (ALIAS_JDBC.equalsIgnoreCase(type)) {
 			transactionManager = new JdbcTransactionManager();
 		} else if (ALIAS_ATOMIKOS.equalsIgnoreCase(type)) {

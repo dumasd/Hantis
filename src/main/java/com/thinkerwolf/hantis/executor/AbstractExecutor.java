@@ -17,8 +17,8 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.thinkerwolf.log.InternalLoggerFactory;
+import com.thinkerwolf.log.Logger;
 
 import java.sql.*;
 import java.util.Collections;
@@ -37,7 +37,7 @@ public abstract class AbstractExecutor implements Executor {
 	/** 一级查询缓存 */
 	private Cache cache = new SimpleCache();
 
-	protected final Logger logger = LoggerFactory.getLogger(getClass());
+	protected final Logger logger = InternalLoggerFactory.getLogger(getClass());
 
 	public CommonDataSource getDataSource() {
 		return dataSource;

@@ -21,8 +21,6 @@ public class GenericObjectPool<T> implements ObjectPool<T> {
         protected AtomicInteger initialValue() {
             return new AtomicInteger(0);
         }
-
-        ;
     };
 
     public GenericObjectPool(int minNum, int maxNum) {
