@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>hantis-parent</artifactId>
+        <groupId>com.thinkerwolf</groupId>
+        <version>0.0.1.Alpha</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>hantis-all</artifactId>
+    <version>0.0.1.Alpha</version>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-common</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-transaction-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-transaction-jdbc</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-transaction-jta</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-datasource-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-datasource-jdbc</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-datasource-jta</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+    </dependencies>
+
+    
+</project>
