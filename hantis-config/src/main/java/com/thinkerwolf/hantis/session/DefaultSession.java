@@ -1,6 +1,9 @@
 package com.thinkerwolf.hantis.session;
 
+import com.thinkerwolf.hantis.cache.CacheKey;
 import com.thinkerwolf.hantis.common.StopWatch;
+import com.thinkerwolf.hantis.common.log.InternalLoggerFactory;
+import com.thinkerwolf.hantis.common.log.Logger;
 import com.thinkerwolf.hantis.executor.BatchExecutor;
 import com.thinkerwolf.hantis.executor.CommonExecutor;
 import com.thinkerwolf.hantis.executor.Executor;
@@ -20,9 +23,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class DefaultSession implements Session {
 
@@ -36,7 +36,7 @@ public class DefaultSession implements Session {
 
 	private TransactionManager transactionManager;
 
-	private static final Logger logger = LoggerFactory.getLogger(DefaultSession.class);
+	private static final Logger logger = InternalLoggerFactory.getLogger(DefaultSession.class);
 
 	public DefaultSession(TransactionDefinition transactionDefinition, SessionFactoryBuilder builder) {
 		this.transactionDefinition = transactionDefinition;
@@ -51,7 +51,7 @@ public class DefaultSession implements Session {
 			doTransactionClose();
 			executor.close();
 		} catch (Exception e) {
-			throw new IOException(e);
+			logger.error("close error", e);
 		}
 	}
 
@@ -137,29 +137,44 @@ public class DefaultSession implements Session {
 	public <T> List<T> selectList(String mapping, Object parameter) {
 		SqlNode sn = builder.getSqlNode(mapping);
 		Sql sql = new Sql(parameter);
-		try {
-			sn.generate(sql);
-		} catch (Throwable throwable) {
-			return null;
-		}
-		return executor.queryForList(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
-	}
-
-	@Override
-	public <T> T selectOne(String mapping, Object parameter) {
-		SqlNode sn = builder.getSqlNode(mapping);
-		Sql sql = new Sql(parameter);
 		StopWatch sw = StopWatch.start();
 		try {
 			sn.generate(sql);
 		} catch (Throwable throwable) {
+			logger.error("Generate sql error", throwable);
 			return null;
 		}
-
 		if (logger.isDebugEnabled()) {
 			logger.debug("Generate sql {" + sql.toString() +"} time(ms) : " + sw.end());
 		}
-		return executor.queryForOne(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
+
+		CacheKey cacheKey = null;
+		if (sn.getCache() != null) {
+			cacheKey = new CacheKey();
+			cacheKey.append(sql.getSql()).append(sql.getParams());
+			Object obj = sn.getCache().getObject(cacheKey);
+			if (obj != null) {
+				logger.info("Use secondary cache");
+				return (List<T>) obj;
+			}
+		}
+
+		List<T> resList = executor.queryForList(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
+
+		if (sn.getCache() != null) {
+			sn.getCache().putObject(cacheKey, resList);
+		}
+
+		return resList;
+	}
+
+	@Override
+	public <T> T selectOne(String mapping, Object parameter) {
+		List<T> resList = selectList(mapping, parameter);
+		if (resList.size() > 1) {
+			throw new RuntimeException("Too many result");
+		}
+		return resList.size() == 0 ? null : resList.get(0);
 	}
 
 	@Override
@@ -169,14 +184,11 @@ public class DefaultSession implements Session {
 
 	@Override
 	public <K, V> Map<K, V> selectMap(String mapping, Object parameter) {
-		SqlNode sn = builder.getSqlNode(mapping);
-		Sql sql = new Sql(parameter);
-		try {
-			sn.generate(sql);
-		} catch (Throwable e) {
-			return null;
+		List<Map<K, V>> resList = selectList(mapping, parameter);
+		if (resList.size() > 1) {
+			throw new RuntimeException("Too many result");
 		}
-		return (Map<K, V>) executor.queryForOne(sql.getSql(), sql.getParams());
+		return resList.size() == 0 ? null : resList.get(0);
 	}
 
 	@Override
@@ -192,11 +204,17 @@ public class DefaultSession implements Session {
 		try {
 			sn.generate(sql);
 		} catch (Throwable throwable) {
+			logger.error("Generate sql error", throwable);
 			return 0;
 		}
 		if (logger.isDebugEnabled()) {
 			logger.debug("Generate sql {" + sql.toString() +"} time(ms) : " + sw.end());
 		}
+
+		if (sn.getCache() != null) {
+			sn.getCache().clear();
+		}
+
 		return executor.update(sql.getSql(), sql.getParams());
 	}
 
@@ -229,20 +247,44 @@ public class DefaultSession implements Session {
 	public <T> List<T> getList(Class<T> clazz, Object parameter) {
 		TableEntity tableEntity = getTableEntity(clazz);
 		Sql sql = tableEntity.parseSelectSql(parameter);
-		return executor.queryForList(sql.getSql(), sql.getParams(), clazz);
+
+		CacheKey cacheKey = null;
+		if (tableEntity.getCache() != null) {
+			cacheKey = new CacheKey();
+			cacheKey.append(sql.getSql()).append(sql.getParams());
+			Object obj = tableEntity.getCache().getObject(cacheKey);
+			if (obj != null) {
+				logger.info("Use secondary cache");
+				return (List<T>) obj;
+			}
+		}
+
+		List<T> resList = executor.queryForList(sql.getSql(), sql.getParams(), clazz);
+
+
+		if (tableEntity.getCache() != null) {
+			tableEntity.getCache().putObject(cacheKey, resList);
+		}
+
+		return resList;
 	}
 
 	@Override
 	public <T> T get(Class<T> clazz, Object parameter) {
-		TableEntity tableEntity = getTableEntity(clazz);
-		Sql sql = tableEntity.parseSelectSql(parameter);
-		return executor.queryForOne(sql.getSql(), sql.getParams(), clazz);
+		List<T> resList = getList(clazz, parameter);
+		if (resList.size() > 1) {
+			throw new RuntimeException("Too many result");
+		}
+		return resList.size() == 0 ? null : resList.get(0);
 	}
 
 	@Override
 	public <T> int update(T entity) {
 		TableEntity tableEntity = getTableEntity(entity.getClass());
 		Sql sql = tableEntity.parseUpdateSql(executor, entity);
+		if (tableEntity.getCache() != null) {
+			tableEntity.getCache().clear();
+		}
 		return executor.update(sql.getSql(), sql.getParams());
 	}
 
@@ -250,6 +292,9 @@ public class DefaultSession implements Session {
 	public <T> int delete(T entity) {
 		TableEntity tableEntity = getTableEntity(entity.getClass());
 		Sql sql = tableEntity.parseDeleteSql(executor, entity);
+		if (tableEntity.getCache() != null) {
+			tableEntity.getCache().clear();
+		}
 		return executor.update(sql.getSql(), sql.getParams());
 	}
 
@@ -257,6 +302,9 @@ public class DefaultSession implements Session {
 	public <T> int create(T entity) {
 		TableEntity tableEntity = getTableEntity(entity.getClass());
 		Sql sql = tableEntity.parseInsertSql(executor, entity);
+		if (tableEntity.getCache() != null) {
+			tableEntity.getCache().clear();
+		}
 		return executor.update(sql.getSql(), sql.getParams());
 	}
 
@@ -267,5 +315,6 @@ public class DefaultSession implements Session {
 		}
 		return tableEntity;
 	}
+
 
 }

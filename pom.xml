@@ -35,7 +35,7 @@
         <atomikos.version>4.0.6</atomikos.version>
         <guava.version>18.0</guava.version>
         <freemarker.version>2.3.28</freemarker.version>
-        <ognl.version>3.2.10</ognl.version>
+        <ognl.version>3.1.18</ognl.version>
         <jedis.version>2.9.0</jedis.version>
         <jta.version>1.2</jta.version>
     </properties>

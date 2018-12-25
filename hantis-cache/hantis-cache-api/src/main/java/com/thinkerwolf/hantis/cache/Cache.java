@@ -1,9 +1,11 @@
 package com.thinkerwolf.hantis.cache;
 
+import java.io.Serializable;
+
 /**
  * Cache
  */
-public interface Cache {
+public interface Cache extends Serializable {
 
     void putObject(Object key, Object value);
 
@@ -14,7 +16,5 @@ public interface Cache {
     int getSize();
 
     void clear();
-    
-    
 
 }

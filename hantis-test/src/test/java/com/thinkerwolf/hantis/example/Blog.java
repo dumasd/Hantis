@@ -1,11 +1,12 @@
 package com.thinkerwolf.hantis.example;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import com.thinkerwolf.hantis.orm.annotation.*;
 
 @Entity(name = "blog")
-public class Blog {
+public class Blog implements Serializable {
 
 	@Id
 	@GeneratedValue

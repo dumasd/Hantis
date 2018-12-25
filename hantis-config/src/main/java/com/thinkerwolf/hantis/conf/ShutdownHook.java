@@ -20,6 +20,10 @@ public class ShutdownHook extends Thread {
     @Override
     public void run() {
         for (SessionFactoryBuilder sfb : configuration.getAllSessionFactoryBuilder()) {
+            if (sfb.getCache() != null) {
+                sfb.getCache().clear();
+            }
+
             if (sfb.getDataSource() instanceof Disposable) {
 
                 try {

@@ -2,10 +2,12 @@ package com.thinkerwolf.hantis.orm;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import com.thinkerwolf.hantis.cache.Cache;
 import com.thinkerwolf.hantis.common.NameHandler;
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.Params;
@@ -24,7 +26,7 @@ import ognl.OgnlException;
  * @author wukai
  *
  */
-public class TableEntity<T> implements Closeable {
+public class TableEntity<T> implements Closeable, Serializable {
 
 	/** Orm class */
 	private Class<T> clazz;
@@ -42,6 +44,8 @@ public class TableEntity<T> implements Closeable {
     private String deleteSql;
 
     private String selectSql;
+
+    private Cache cache;
 
 	public TableEntity(Class<T> clazz, NameHandler nameHandler) {
 		this.clazz = clazz;
@@ -73,6 +77,14 @@ public class TableEntity<T> implements Closeable {
         this.deleteSql = generateDeleteSql();
         this.insertSql = generateInsertSql();
 
+    }
+
+    public Cache getCache() {
+        return cache;
+    }
+
+    public void setCache(Cache cache) {
+        this.cache = cache;
     }
 
     private String generateSelectSql() {

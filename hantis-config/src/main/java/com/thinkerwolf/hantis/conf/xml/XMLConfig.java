@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.conf.xml;
 
+import com.thinkerwolf.hantis.cache.Cache;
 import com.thinkerwolf.hantis.common.Initializing;
 import com.thinkerwolf.hantis.common.io.Resource;
 import com.thinkerwolf.hantis.common.io.Resources;
@@ -154,6 +155,27 @@ public class XMLConfig {
 		NodeList exeNl = el.getElementsByTagName("executor");
 		ExecutorType executorType = parseExecutor((Element) exeNl.item(0));
 
+		// 解析cache
+		NodeList cacheNl = el.getElementsByTagName("cache");
+		if (cacheNl.getLength() > 0) {
+			Element cacheE = (Element) cacheNl.item(0);
+			boolean enable = true;
+			if (cacheE.hasAttribute("enable")) {
+				enable = Boolean.parseBoolean(cacheE.getAttribute("enable"));
+			}
+			if (enable) {
+				builder.setCache(parseCache(cacheE));
+			}
+		}
+
+		for (SqlNode sn : sqlNodeMap.values()) {
+			sn.setCache(builder.getCache());
+		}
+
+		for (TableEntity<?> tableEntity : tableEntityMap.values()) {
+			tableEntity.setCache(builder.getCache());
+		}
+
 		builder.setId(id);
 		builder.setDataSource(dataSource);
 		builder.setSqlNodeMap(sqlNodeMap);
@@ -241,6 +263,15 @@ public class XMLConfig {
 		} else {
 			return null;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private Cache parseCache(Element el) {
+		String type = el.hasAttribute("type") ? el.getAttribute("type") : "Redis";
+		Cache cache = (Cache) ClassUtils.newInstance(type);
+		Properties props = parseElementProps(el);
+		PropertyUtils.setProperties(cache, props);
+		return cache;
 	}
 
 	private String getPropertyValue(String originValue) {

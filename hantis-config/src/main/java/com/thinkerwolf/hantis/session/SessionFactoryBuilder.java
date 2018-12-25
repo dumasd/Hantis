@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.session;
 
+import com.thinkerwolf.hantis.cache.Cache;
 import com.thinkerwolf.hantis.executor.ExecutorType;
 import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.sql.SqlNode;
@@ -18,6 +19,8 @@ public final class SessionFactoryBuilder {
     private Configuration configuration;
     private ExecutorType executorType;
     private Map<String, TableEntity<?>> entityMap;
+    private Cache cache;
+
 
     public String getId() {
         return id;
@@ -62,6 +65,14 @@ public final class SessionFactoryBuilder {
 	public void setExecutorType(ExecutorType executorType) {
 		this.executorType = executorType;
 	}
+
+    public Cache getCache() {
+        return cache;
+    }
+
+    public void setCache(Cache cache) {
+        this.cache = cache;
+    }
 
     public SqlNode getSqlNode(String mapping) {
         SqlNode sqlNode = sqlNodeMap.get(mapping);

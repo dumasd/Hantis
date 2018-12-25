@@ -1,12 +1,12 @@
 package com.thinkerwolf.hantis.example;
-
+import java.io.Serializable;
 import com.thinkerwolf.hantis.orm.annotation.*;
 
 /**
  * Auto genarated by Hantis 
  */
 @Entity(name = "double_key")
-public class DoubleKey {
+public class DoubleKey implements Serializable {
 	/**  */
 	@Id
 	@GeneratedValue

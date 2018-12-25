@@ -11,6 +11,10 @@
 
     <artifactId>hantis-cache</artifactId>
     <packaging>pom</packaging>
+    <name>${project.artifactId}</name>
+    <properties>
+        <skip_maven_deploy>false</skip_maven_deploy>
+    </properties>
     <modules>
         <module>hantis-cache-api</module>
         <module>hantis-cache-redis</module>

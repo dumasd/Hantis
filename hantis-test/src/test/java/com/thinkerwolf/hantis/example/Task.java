@@ -2,11 +2,13 @@ package com.thinkerwolf.hantis.example;
 
 import com.thinkerwolf.hantis.orm.annotation.*;
 
+import java.io.Serializable;
+
 /**
  * Auto genarated by Hantis 
  */
 @Entity(name = "task")
-public class Task {
+public class Task implements Serializable {
 	/** 任务ID */
 	@Id
 	@Column(name = "task_id")

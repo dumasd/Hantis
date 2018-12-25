@@ -11,4 +11,12 @@
 
     <artifactId>hantis-cache-api</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-common</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+    </dependencies>
+
 </project>

@@ -1,5 +1,7 @@
 package com.thinkerwolf.hantis.sql;
 
+import com.thinkerwolf.hantis.cache.Cache;
+
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -16,5 +18,7 @@ public interface SqlNode {
 
     void setChildren(List<SqlNode> children);
 
+    Cache getCache();
 
+    void setCache(Cache cache);
 }

@@ -41,6 +41,19 @@
             <artifactId>hantis-datasource-jta</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-cache-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-cache-redis</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>
