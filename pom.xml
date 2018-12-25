@@ -29,12 +29,15 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<encoding>UTF-8</encoding>
 
+        <junit.version>4.12</junit.version>
 	    <log4j.version>2.11.0</log4j.version>
         <slf4j.version>1.7.25</slf4j.version>
         <atomikos.version>4.0.6</atomikos.version>
         <guava.version>18.0</guava.version>
         <freemarker.version>2.3.28</freemarker.version>
         <ognl.version>3.2.10</ognl.version>
+        <jedis.version>2.9.0</jedis.version>
+        <jta.version>1.2</jta.version>
     </properties>
 
 
@@ -53,7 +56,7 @@
             <dependency>
                 <groupId>javax.transaction</groupId>
                 <artifactId>javax.transaction-api</artifactId>
-                <version>1.2</version>
+                <version>${jta.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.atomikos</groupId>
@@ -88,6 +91,11 @@
                 <artifactId>ognl</artifactId>
                 <version>${ognl.version}</version>
             </dependency>
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -96,7 +104,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 
