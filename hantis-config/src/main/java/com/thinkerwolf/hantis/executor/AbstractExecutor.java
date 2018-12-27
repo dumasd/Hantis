@@ -28,16 +28,16 @@ import java.util.Map;
 
 public abstract class AbstractExecutor implements Executor {
 
+	protected final Logger logger = InternalLoggerFactory.getLogger(getClass());
+
 	private CommonDataSource dataSource;
 
 	private NameHandler nameHandler = new DefaultNameHandler();
 
 	private Configuration configuration;
 
-	/** 一级查询缓存 */
+	/** First level cache */
 	private Cache cache = new SimpleCache();
-
-	protected final Logger logger = InternalLoggerFactory.getLogger(getClass());
 
 	public CommonDataSource getDataSource() {
 		return dataSource;
@@ -128,10 +128,14 @@ public abstract class AbstractExecutor implements Executor {
 		if (rb == null) {
 			PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
 			callback = new QueryStatementExecuteCallback<>(builder, listHandler);
-			logger.debug("[" + sql + "] queryForList no cache");
+			if (logger.isDebugEnabled()) {
+				logger.debug("[" + sql + "] queryForList no cache");
+			}
 		} else {
 			callback = new QueryStatementExecuteCallback<>(listHandler, rb);
-			logger.debug("[" + sql + "] queryForList use cache");
+			if (logger.isDebugEnabled()) {
+				logger.debug("[" + sql + "] queryForList use cache");
+			}
 		}
 		List<T> result = execute(callback);
 		cache.putObject(cacheKey, callback.getRowBound());

@@ -38,7 +38,7 @@ public class ClassPathResource extends AbstractResource {
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		return url.openStream();
+		return url == null ? null : url.openStream();
 	}
 
 	@Override

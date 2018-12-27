@@ -32,8 +32,8 @@ public class ServiceLoader<T> {
     @SuppressWarnings("unchecked")
     private static <T> ServiceLoader<T> load(Class<T> service, ClassLoader cl) {
         try {
-            if (logger.isInfoEnabled()) {
-                logger.info("Load service " + SERVICES_FOLDER + service.getName());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Load service " + SERVICES_FOLDER + service.getName());
             }
             Enumeration<URL> urls = ClassLoader.getSystemResources(SERVICES_FOLDER + service.getName());
             ServiceLoader<T> sl = (ServiceLoader<T>) serviceLoaderMap.get(service);

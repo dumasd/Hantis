@@ -154,7 +154,9 @@ public class DefaultSession implements Session {
 			cacheKey.append(sql.getSql()).append(sql.getParams());
 			Object obj = sn.getCache().getObject(cacheKey);
 			if (obj != null) {
-				logger.info("Use secondary cache");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Use secondary cache");
+				}
 				return (List<T>) obj;
 			}
 		}
@@ -254,7 +256,9 @@ public class DefaultSession implements Session {
 			cacheKey.append(sql.getSql()).append(sql.getParams());
 			Object obj = tableEntity.getCache().getObject(cacheKey);
 			if (obj != null) {
-				logger.info("Use secondary cache");
+				if (logger.isDebugEnabled()) {
+					logger.debug("Use secondary cache");
+				}
 				return (List<T>) obj;
 			}
 		}
