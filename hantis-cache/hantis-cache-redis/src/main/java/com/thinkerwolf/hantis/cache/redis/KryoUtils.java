@@ -15,7 +15,7 @@ public class KryoUtils {
     static Kryo kryo = new Kryo();
 
     public static byte[] serialize(Object object) throws IOException {
-        kryo.register(object.getClass());
+       // kryo.register(object.getClass());
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         Output output = new Output(baos);
         KryoObjectOutput koo = new KryoObjectOutput(kryo, output);

@@ -5,10 +5,14 @@ import com.thinkerwolf.hantis.common.io.Resources;
 import java.io.File;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public class ClassUtils {
+
+    public static final Map<Class<?>, ClassMetaData> classMetaDataCache = new ConcurrentHashMap<>();
 
     public static ClassLoader getDefaultClassLoader() {
         ClassLoader cl = null;
@@ -66,9 +70,9 @@ public class ClassUtils {
     }
 
     /**
-     * 扫描Class文件
+     * Scan Class
      *
-     * @param basePackage 包名，可以包含通配符
+     * @param basePackage package name，可以包含通配符
      * @return
      */
     public static Set<Class<?>> scanClasses(String basePackage) {
@@ -86,5 +90,20 @@ public class ClassUtils {
         }
         return result;
     }
+
+    /**
+     *
+     * @param clazz
+     * @return
+     */
+    public static ClassMetaData getClassMetaData(Class<?> clazz) {
+        ClassMetaData metaData = classMetaDataCache.get(clazz);
+        if (metaData == null) {
+            metaData = new ClassMetaData(clazz);
+            classMetaDataCache.put(clazz, metaData);
+        }
+        return metaData;
+    }
+
 
 }

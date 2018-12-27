@@ -85,7 +85,8 @@ public class ConnectionUtils {
 	}
 
 	public static void closeConnection(Connection conn) throws SQLException {
-		conn.close();
+		if (conn != null)
+			conn.close();
 	}
 
 	public static void bindConnection(CommonDataSource dataSource, Connection conn,

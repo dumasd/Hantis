@@ -1,0 +1,2 @@
+XAPOOL=com.thinkerwolf.hantis.datasource.jta.XaPoolDataSourceFactory
+XAUNPOOL=com.thinkerwolf.hantis.datasource.jta.XaUnPoolDataSourceFactory

@@ -35,12 +35,11 @@ public class SessionFactoryTest {
             System.out.println(blogs);
             List<Blog> blogs1 = session1.selectList("tableBlog.selectOne");
 
+            System.out.println(blogs1);
             System.out.println("Spend time : " + sw.end());
         } finally {
             session.close();
         }
-
-
     }
 
    // @Test

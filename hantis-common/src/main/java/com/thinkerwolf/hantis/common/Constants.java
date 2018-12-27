@@ -10,6 +10,8 @@ public class Constants {
 
 	public static final String ALIAS_JDBC = "JDBC";
 
+	public static final String DEFAULT_TRANSACTION_MANAGER_NAME = "com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager";
+
 	public static final String DATASOUCE_ATOMIKOS_NAME = "com.thinkerwolf.hantis.transaction.jta.atomikos.AtomikosDataSourceBean";
 
 	public static final String TRANSACTIONMANAGER_ATOMIKOS_NAME = "com.thinkerwolf.hantis.transaction.jta.atomikos.AtomikosTransactionManager";

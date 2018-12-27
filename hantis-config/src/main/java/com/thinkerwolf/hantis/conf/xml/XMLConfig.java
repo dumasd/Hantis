@@ -1,17 +1,20 @@
 package com.thinkerwolf.hantis.conf.xml;
 
 import com.thinkerwolf.hantis.cache.Cache;
+import com.thinkerwolf.hantis.cache.CacheFactory;
 import com.thinkerwolf.hantis.common.Initializing;
+import com.thinkerwolf.hantis.common.ServiceLoader;
 import com.thinkerwolf.hantis.common.io.Resource;
 import com.thinkerwolf.hantis.common.io.Resources;
 import com.thinkerwolf.hantis.common.util.ClassUtils;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.common.util.ReflectionUtils;
 import com.thinkerwolf.hantis.common.util.StringUtils;
+import com.thinkerwolf.hantis.common.xml.XNode;
+import com.thinkerwolf.hantis.common.xml.XPathParser;
 import com.thinkerwolf.hantis.conf.HantisConfigException;
 import com.thinkerwolf.hantis.conf.ShutdownHook;
-import com.thinkerwolf.hantis.datasource.jdbc.DBPoolDataSource;
-import com.thinkerwolf.hantis.datasource.jdbc.DBUnpoolDataSource;
+import com.thinkerwolf.hantis.datasource.CommonDataSourceFactory;
 import com.thinkerwolf.hantis.executor.ExecutorType;
 import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.orm.annotation.Entity;
@@ -19,84 +22,47 @@ import com.thinkerwolf.hantis.session.Configuration;
 import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
 import com.thinkerwolf.hantis.sql.SqlNode;
 import com.thinkerwolf.hantis.transaction.TransactionManager;
-import com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManager;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import com.thinkerwolf.hantis.transaction.TransactionManagerFactory;
 
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.thinkerwolf.hantis.common.Constants.*;
 
 public class XMLConfig {
-
-	private static final Pattern PLACE_HOLDER = Pattern.compile("\\$\\s*\\{.*\\}");
-	private static final Pattern PROP_NAME = Pattern.compile("[^\\$\\s\\{\\}]+");
 
 	private static final AtomicInteger sessionFacrotyId = new AtomicInteger();
 
 	private static final String DEFAULT_SESSION_FACTORY_ID_PREFFIX = "session-factory-";
 
-	private InputStream is;
+	//private InputStream is;
 
 	private Configuration configuration;
+
+	private XPathParser xPathParser;
 
 	public XMLConfig(InputStream is) {
 		this(is, new Configuration());
 	}
 
 	public XMLConfig(InputStream is, Configuration configuration) {
-		this.is = is;
+		//this.is = is;
 		this.configuration = configuration;
+		try {
+			this.xPathParser = XPathParser.getParser(is);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public void parse() {
 		try {
-
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(false);
-			factory.setValidating(false);
-			DocumentBuilder db = factory.newDocumentBuilder();
-			Document doc = db.parse(is);
-			if (doc.getElementsByTagName("sessionFactories").getLength() == 0) {
-				return;
-			}
-
-			// 解析props
-			NodeList propsNodeList = doc.getElementsByTagName("props");
-			for (int i = 0, len = propsNodeList.getLength(); i < len; i++) {
-				parseProps((Element) propsNodeList.item(i));
-			}
-
-			Element sessionFactoriesEl = (Element) doc.getElementsByTagName("sessionFactories").item(0);
-
-            // 解析transactionManager
-            NodeList tmNl = doc.getElementsByTagName("transactionManager");
-            parseTransactionManager(tmNl.getLength() > 0 ? (Element) tmNl.item(0) : null);
-
-            // 解析sessionFactory，当TransactionManager未Jdbc时，只解析一个sessionFactory
-            NodeList sessionFactoryNodeList = sessionFactoriesEl.getElementsByTagName("sessionFactory");
-            for (int i = 0, len = sessionFactoryNodeList.getLength(); i < len; i++) {
-				parseSessionFactory((Element) sessionFactoryNodeList.item(i));
-                if (!configuration.getTransactionManager().isDistributed()) {
-                    break;
-                }
-			}
+			parseVariables();
+			parseTransactionManager();
+			parseSessionFactory();
 
             doAfterParse(configuration);
-
             Runtime.getRuntime().addShutdownHook(new ShutdownHook(configuration));
 
         } catch (Throwable e) {
@@ -106,226 +72,191 @@ public class XMLConfig {
 	}
 
     private void doAfterParse(Configuration configuration) throws Throwable {
-        for (SessionFactoryBuilder builder : configuration.getAllSessionFactoryBuilder()) {
-            if (!configuration.getTransactionManager().isDistributed()) {
-                ((JdbcTransactionManager) configuration.getTransactionManager()).setDataSource((DataSource) builder.getDataSource());
-            }
-        }
+		TransactionManager transactionManager = configuration.getTransactionManager();
+        if (!transactionManager.isDistributed()) {
+        	SessionFactoryBuilder builder = configuration.getAllSessionFactoryBuilder().get(0);
+        	PropertyUtils.setProperty(transactionManager, "dataSource", (DataSource) builder.getDataSource());
+		}
         configuration.getTransactionManager().afterPropertiesSet();
     }
 
-
-	private void parseProps(Element el) {
-		NodeList propNode = el.getChildNodes();
-		for (int i = 0, len = propNode.getLength(); i < len; i++) {
-			Node node = propNode.item(i);
-			if (node.getNodeType() != Node.ELEMENT_NODE)
-				continue;
-			Element propEl = (Element) node;
-			configuration.getProps().setProperty(propEl.getAttribute("name").trim(),
-					propEl.getAttribute("value").trim());
+	private void parseVariables() {
+		XNode xNode = xPathParser.evalNode("/configuration/props", xPathParser.getDoc());
+		if (xNode != null) {
+			xPathParser.setVariables(xNode.getChildrenAsProperties());
 		}
 	}
 
-	private SessionFactoryBuilder parseSessionFactory(Element el) {
-		String id = el.getAttribute("id");
-		if (StringUtils.isEmpty(id)) {
-			id = DEFAULT_SESSION_FACTORY_ID_PREFFIX + sessionFacrotyId.incrementAndGet();
+	private void parseTransactionManager() {
+		XNode xNode = xPathParser.evalNode("/configuration/sessionFactories/transactionManager", xPathParser.getDoc());
+		if (xNode == null) {
+			throw new HantisConfigException("Not find TransactionManager config!");
 		}
-		// 解析DataSource
-		SessionFactoryBuilder builder = new SessionFactoryBuilder();
-		Element dataSourceEl = (Element) el.getElementsByTagName("dataSource").item(0);
-		CommonDataSource dataSource = parseDataSource(dataSourceEl);
-
-        if (dataSource instanceof Initializing) {
-            try {
-                ((Initializing) dataSource).afterPropertiesSet();
-            } catch (Throwable throwable) {
-                throw new HantisConfigException(throwable);
-            }
-        }
-
-		// 解析mapping
-		Map<String, SqlNode> sqlNodeMap = new HashMap<>();
-		Map<String, TableEntity<?>> tableEntityMap = new HashMap<>();
-		Element sqlsEl = (Element) el.getElementsByTagName("mappings").item(0);
-		parseMappings(sqlsEl, sqlNodeMap, tableEntityMap);
-
-		// 解析Executor
-		NodeList exeNl = el.getElementsByTagName("executor");
-		ExecutorType executorType = parseExecutor((Element) exeNl.item(0));
-
-		// 解析cache
-		NodeList cacheNl = el.getElementsByTagName("cache");
-		if (cacheNl.getLength() > 0) {
-			Element cacheE = (Element) cacheNl.item(0);
-			boolean enable = true;
-			if (cacheE.hasAttribute("enable")) {
-				enable = Boolean.parseBoolean(cacheE.getAttribute("enable"));
-			}
-			if (enable) {
-				builder.setCache(parseCache(cacheE));
-			}
+		String type = xNode.getStringAttrubute("type");
+		Properties properties = xNode.getChildrenAsProperties();
+		if (StringUtils.isEmpty(type)) {
+			throw new HantisConfigException("TransactionManager type is null");
 		}
-
-		for (SqlNode sn : sqlNodeMap.values()) {
-			sn.setCache(builder.getCache());
+		TransactionManagerFactory factory = ServiceLoader.getService(type, TransactionManagerFactory.class);
+		TransactionManager transactionManager;
+		try {
+			transactionManager = factory.getObject();
+		} catch (Exception e) {
+			throw new HantisConfigException(e);
 		}
-
-		for (TableEntity<?> tableEntity : tableEntityMap.values()) {
-			tableEntity.setCache(builder.getCache());
-		}
-
-		builder.setId(id);
-		builder.setDataSource(dataSource);
-		builder.setSqlNodeMap(sqlNodeMap);
-		builder.setEntityMap(tableEntityMap);
-		builder.setConfiguration(configuration);
-		builder.setExecutorType(executorType);
-		configuration.putSessionFactoryBuilder(builder);
-
-
-        return builder;
-    }
-
-	private CommonDataSource parseDataSource(Element el) {
-		String dataSourceType = el.getAttribute("type");
-		if (StringUtils.isEmpty(dataSourceType)) {
-			throw new HantisConfigException("dataSource type is null");
-		}
-        CommonDataSource dataSource;
-        if (ALIAS_POOL.equals(dataSourceType)) {
-            dataSource = new DBPoolDataSource();
-		} else if (ALIAS_UNPOOL.equals(dataSourceType)) {
-			dataSource = new DBUnpoolDataSource();
-		} else if (ALIAS_ATOMIKOS.equals(dataSourceType)) {
-			dataSource = (DataSource) ClassUtils.newInstance(DATASOUCE_ATOMIKOS_NAME);
-		} else {
-			dataSource = (DataSource) ClassUtils.newInstance(dataSourceType);
-		}
-		Properties props = parseElementProps(el);
-		PropertyUtils.setProperties(dataSource, props);
-		return dataSource;
+		PropertyUtils.setProperties(transactionManager, properties);
+		configuration.setTransactionManager(transactionManager);
 	}
 
-	/**
-	 * 解析sqls
-	 *
-	 * @param el
-	 */
-	private void parseMappings(Element el, Map<String, SqlNode> sqlNodeMap,
-			Map<String, TableEntity<?>> tableEntityMap) {
-		NodeList nl = el.getElementsByTagName("mapping");
-		for (int i = 0, len = nl.getLength(); i < len; i++) {
-			Element mappingEl = (Element) nl.item(i);
+	private void parseSessionFactory() {
+		List<XNode> xNodes = xPathParser.evalNodeList("/configuration/sessionFactories/sessionFactory", xPathParser.getDoc());
+		if (xNodes == null || xNodes.size() == 0) {
+			throw new HantisConfigException("Not find SessionFactory config!");
+		}
 
+		try {
+			for (XNode xNode : xNodes) {
+				String id = xNode.getStringAttrubute("id");
+				if (StringUtils.isEmpty(id)) {
+					id = DEFAULT_SESSION_FACTORY_ID_PREFFIX + sessionFacrotyId.incrementAndGet();
+				}
+				SessionFactoryBuilder builder = new SessionFactoryBuilder();
+				CommonDataSource ds = dataSource(xNode.evalNode("dataSource"));
+				ExecutorType executorType = executorType(xNode.evalNode("executor"));
+				Map<String, SqlNode> sqlNodeMap = sqlNodes(xNode.evalNode("mappings"));
+				Map<String, TableEntity<?>> entityMap = tableEntities(xNode.evalNode("mappings"));
+
+				XNode cacheNode = xNode.evalNode("cache");
+				if (cacheNode != null) {
+					Properties cacheProps = cacheNode.getChildrenAsProperties();
+					CacheFactory cacheFactory = cacheFactory(xNode.evalNode("cache"));
+					if (cacheFactory != null) {
+						if (sqlNodeMap.size() > 0) {
+							Cache cache = cacheFactory.getObject();
+							PropertyUtils.setProperties(cache, cacheProps);
+							for (SqlNode sn : sqlNodeMap.values()) {
+								sn.setCache(cache);
+							}
+						}
+						if (entityMap.size() > 0) {
+							Cache cache = cacheFactory.getObject();
+							PropertyUtils.setProperties(cache, cacheProps);
+							for (TableEntity<?> te : entityMap.values()) {
+								te.setCache(cache);
+							}
+						}
+					}
+				}
+
+
+				builder.setId(id);
+				builder.setDataSource(ds);
+				builder.setSqlNodeMap(sqlNodeMap);
+				builder.setEntityMap(entityMap);
+				builder.setConfiguration(configuration);
+				builder.setExecutorType(executorType);
+				configuration.putSessionFactoryBuilder(builder);
+				if (!configuration.getTransactionManager().isDistributed()) {
+					break;
+				}
+			}
+
+		} catch (Throwable e) {
+			throw new HantisConfigException(e);
+		}
+
+	}
+
+	private CacheFactory cacheFactory(XNode xNode) {
+		if (xNode == null) {
+			 return null;
+		}
+		Boolean enable = true;
+		enable = xNode.getBoolAttrubute("enable");
+		enable = enable == null ? true : enable;
+		if (!enable) {
+			return null;
+		}
+		String type = xNode.getStringAttrubute("type");
+		if (StringUtils.isEmpty(type)) {
+			throw new HantisConfigException("Cache type is null");
+		}
+		return ServiceLoader.getService(type, CacheFactory.class);
+	}
+
+	private CommonDataSource dataSource(XNode xNode) {
+		String type = xNode.getStringAttrubute("type");
+		if (StringUtils.isEmpty(type)) {
+			throw new HantisConfigException("Not find dataSource config!");
+		}
+		CommonDataSourceFactory dsFactory = ServiceLoader.getService(type, CommonDataSourceFactory.class);
+		try {
+			CommonDataSource ds = dsFactory.getObject();
+			PropertyUtils.setProperties(ds, xNode.getChildrenAsProperties());
+			if (ds instanceof Initializing) {
+				((Initializing) ds).afterPropertiesSet();
+			}
+			return ds;
+		} catch (Throwable e) {
+			throw new HantisConfigException(e);
+		}
+	}
+
+	private Map<String, SqlNode> sqlNodes(XNode xNode) {
+		Map<String, SqlNode> map = new HashMap<>();
+		List<XNode> xNodes = xNode.evalNodeList("mapping");
+		for (XNode xn : xNodes) {
 			// resource 解析sql xml文件
-			if (mappingEl.hasAttribute("resource")) {
-				String resource = mappingEl.getAttribute("resource");
+			if (xn.hasAttribute("resource")) {
+				String resource = xn.getStringAttrubute("resource");
 				Resource[] resources = Resources.getResources(resource);
 				for (Resource r : resources) {
 					if (r.getPath().endsWith(".xml")) {
 						try {
-							sqlNodeMap.putAll(configuration.getParser().parse(r.getInputStream()));
+							map.putAll(configuration.getParser().parse(r.getInputStream()));
 						} catch (Throwable e) {
-                            throw new HantisConfigException(e);
-                        }
-                    }
+							throw new HantisConfigException(e);
+						}
+					}
 				}
 			}
+		}
+		return map;
+	}
 
+	private Map<String, TableEntity<?>> tableEntities(XNode xNode) {
+		Map<String, TableEntity<?>> map = new HashMap <>();
+		List<XNode> xNodes = xNode.evalNodeList("mapping");
+		for (XNode xn : xNodes) {
 			// 解析TableEntity
-			if (mappingEl.hasAttribute("class")) {
-				String clazz = mappingEl.getAttribute("class");
-				parseAnnotationEntity(ClassUtils.forName(clazz), tableEntityMap);
+			if (xn.hasAttribute("class")) {
+				String clazz = xn.getStringAttrubute("class");
+				parseAnnotationEntity(ClassUtils.forName(clazz), map);
 			}
 
-			if (mappingEl.hasAttribute("package")) {
-				String packageName = mappingEl.getAttribute("package");
+			if (xn.hasAttribute("package")) {
+				String packageName = xn.getStringAttrubute("package");
 				Set<Class<?>> set = ClassUtils.scanClasses(packageName);
 				for (Class<?> clazz : set) {
-					parseAnnotationEntity(clazz, tableEntityMap);
+					parseAnnotationEntity(clazz, map);
 				}
 			}
-
 		}
+		return map;
 	}
+
+	private ExecutorType executorType(XNode xNode) {
+		if (xNode == null) {
+			return ExecutorType.COMMON;
+		}
+		return ExecutorType.getType(xNode.getStringAttrubute("type"));
+	}
+
 
 	private void parseAnnotationEntity(Class<?> clazz, Map<String, TableEntity<?>> map) {
 		if (ReflectionUtils.getAnnotation(clazz, Entity.class) != null) {
 			map.put(clazz.getName(), new TableEntity<>(clazz, configuration.getNameHandler()));
 		}
-	}
-
-	private ExecutorType parseExecutor(Element el) {
-		if (el != null) {
-			return ExecutorType.getType(el.getAttribute("type"));
-		} else {
-			return null;
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private Cache parseCache(Element el) {
-		String type = el.hasAttribute("type") ? el.getAttribute("type") : "Redis";
-		Cache cache = (Cache) ClassUtils.newInstance(type);
-		Properties props = parseElementProps(el);
-		PropertyUtils.setProperties(cache, props);
-		return cache;
-	}
-
-	private String getPropertyValue(String originValue) {
-		if (PLACE_HOLDER.matcher(originValue).find()) {
-			Matcher m = PROP_NAME.matcher(originValue);
-			m.find();
-			String propName = m.group().trim();
-			originValue = configuration.getProps().getProperty(propName);
-		}
-		return originValue;
-	}
-
-	private void parseTransactionManager(Element el) {
-        if (el == null) {
-            configuration.setTransactionManager(new JdbcTransactionManager());
-            return;
-        }
-        String type = el.getAttribute("type");
-
-		if (StringUtils.isEmpty(type)) {
-			throw new HantisConfigException("TransactionManager type is null");
-		}
-		Properties props = parseElementProps(el);
-
-		TransactionManager transactionManager;
-		if (ALIAS_JDBC.equalsIgnoreCase(type)) {
-			transactionManager = new JdbcTransactionManager();
-		} else if (ALIAS_ATOMIKOS.equalsIgnoreCase(type)) {
-			transactionManager = ClassUtils.newInstance(TRANSACTIONMANAGER_ATOMIKOS_NAME);
-		} else {
-			transactionManager = ClassUtils.newInstance(type);
-		}
-		PropertyUtils.setProperties(transactionManager, props);
-		configuration.setTransactionManager(transactionManager);
-	}
-
-	private Properties parseElementProps(Element el) {
-		NodeList propsNl = el.getElementsByTagName("property");
-		Properties props = new Properties();
-		for (int i = 0, len = propsNl.getLength(); i < len; i++) {
-			Element propEl = (Element) propsNl.item(i);
-			Object value = null;
-			if (propEl.hasAttribute("value")) {
-				value = getPropertyValue(propEl.getAttribute("value").trim());
-			} else {
-				NodeList l = propEl.getElementsByTagName("props");
-				if (l.getLength() > 0) {
-					value = parseElementProps((Element) l.item(0));
-				}
-			}
-			if (value != null)
-				props.put(propEl.getAttribute("name").trim(), value);
-		}
-		return props;
 	}
 
 	public Configuration getConfiguration() {

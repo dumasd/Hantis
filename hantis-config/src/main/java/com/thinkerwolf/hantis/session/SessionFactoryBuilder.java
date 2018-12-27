@@ -6,6 +6,7 @@ import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.sql.SqlNode;
 
 import javax.sql.CommonDataSource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,7 +20,6 @@ public final class SessionFactoryBuilder {
     private Configuration configuration;
     private ExecutorType executorType;
     private Map<String, TableEntity<?>> entityMap;
-    private Cache cache;
 
 
     public String getId() {
@@ -66,14 +66,6 @@ public final class SessionFactoryBuilder {
 		this.executorType = executorType;
 	}
 
-    public Cache getCache() {
-        return cache;
-    }
-
-    public void setCache(Cache cache) {
-        this.cache = cache;
-    }
-
     public SqlNode getSqlNode(String mapping) {
         SqlNode sqlNode = sqlNodeMap.get(mapping);
         if (sqlNode == null) {
@@ -90,5 +82,17 @@ public final class SessionFactoryBuilder {
         return sessionFactory;
     }
 
+
+    public void close() {
+        for (SqlNode sn : sqlNodeMap.values()) {
+            sn.getCache().clear();
+            break;
+        }
+        for (TableEntity<?> te : entityMap.values()) {
+            te.getCache().clear();
+            break;
+        }
+
+    }
 
 }

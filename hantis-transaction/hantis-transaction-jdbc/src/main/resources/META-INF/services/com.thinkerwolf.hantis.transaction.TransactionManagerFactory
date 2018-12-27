@@ -1,0 +1,1 @@
+JDBC=com.thinkerwolf.hantis.transaction.jdbc.JdbcTransactionManagerFactory

@@ -10,8 +10,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>hantis-all</artifactId>
+    <artifactId>hantis</artifactId>
     <version>0.0.1.Alpha</version>
+    <name>${project.artifactId}</name>
 
     <dependencies>
 

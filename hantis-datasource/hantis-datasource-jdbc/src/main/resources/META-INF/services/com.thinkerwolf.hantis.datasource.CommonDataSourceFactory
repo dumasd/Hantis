@@ -1,0 +1,2 @@
+POOL=com.thinkerwolf.hantis.datasource.jdbc.PooledDataSourceFactory
+UNPOOL=com.thinkerwolf.hantis.datasource.jdbc.UnPooledDataSourceFactory

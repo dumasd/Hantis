@@ -15,8 +15,7 @@
         </transactionManager>
 
         <sessionFactory id="development1">
-            <cache enable="true" type="com.thinkerwolf.hantis.cache.redis.RedisCache">
-
+            <cache enable="true" type="REDIS">
             </cache>
             <executor type="BATCH"/>
             <dataSource type="POOL">
@@ -24,7 +23,6 @@
                 <property name="url" value="${mysql.url}"/>
                 <property name="username" value="${mysql.username}"/>
                 <property name="password" value="${mysql.password}"/>
-
 
                 <property name="resourceName" value="db1"/>
                 <property name="xaDataSourceClassName" value="com.mysql.cj.jdbc.MysqlXADataSource"/>

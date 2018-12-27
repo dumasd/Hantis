@@ -1,0 +1,1 @@
+ATOMIKOS=com.thinkerwolf.hantis.transaction.jta.atomikos.AtomikosTransactionManagerFactory

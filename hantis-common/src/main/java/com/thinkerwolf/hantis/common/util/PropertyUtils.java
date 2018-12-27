@@ -4,17 +4,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class PropertyUtils {
 
     public static void setProperties(Object target, Properties props) {
-        ClassMetaData metaData = new ClassMetaData(target.getClass());
+        if (props.size() <= 0) {
+            return;
+        }
+        ClassMetaData metaData = ClassUtils.getClassMetaData(target.getClass());
         for (Entry<Object, Object> entry : props.entrySet()) {
             String propertyName = String.valueOf(entry.getKey());
             String setterName = ReflectionUtils.getPropertySetterName(propertyName);
             Method method = metaData.getMethod(setterName);
             Object value = entry.getValue();
-            // setProperty(target, propertyName, value);
             if (method != null && method.getParameterCount() == 1) {
                 Class<?> pt = method.getParameterTypes()[0];
                 if (pt == value.getClass()) {
@@ -64,9 +68,24 @@ public class PropertyUtils {
             try {
                 ReflectionUtils.callMethod(target, setterMethod, propertyValue);
             } catch (Exception e1) {
-                e1.printStackTrace();
+
             }
         }
     }
 
+    private static final Pattern PLACE_HOLDER = Pattern.compile("\\$\\s*\\{.*\\}");
+    private static final Pattern PROP_NAME = Pattern.compile("[^\\$\\s\\{\\}]+");
+
+    public static Object getPropertyValue(Properties variables, String originValue) {
+        if (PLACE_HOLDER.matcher(originValue).find()) {
+            Matcher m = PROP_NAME.matcher(originValue);
+            m.find();
+            String propName = m.group().trim();
+            if (!variables.containsKey(propName)) {
+                throw new RuntimeException("Not find such property [" + propName + "], please check your config file!");
+            }
+            originValue = variables.getProperty(propName);
+        }
+        return originValue;
+    }
 }

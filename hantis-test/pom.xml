@@ -26,12 +26,6 @@
 
         <dependency>
             <groupId>com.thinkerwolf</groupId>
-            <artifactId>hantis-datasource-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkerwolf</groupId>
             <artifactId>hantis-datasource-jdbc</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -39,6 +33,17 @@
         <dependency>
             <groupId>com.thinkerwolf</groupId>
             <artifactId>hantis-datasource-jta</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-transaction-jdbc</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-transaction-jta</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

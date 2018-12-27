@@ -16,7 +16,11 @@
             <artifactId>hantis-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.thinkerwolf</groupId>
+            <artifactId>hantis-datasource-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
