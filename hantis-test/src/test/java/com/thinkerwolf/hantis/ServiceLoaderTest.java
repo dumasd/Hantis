@@ -16,7 +16,7 @@ public class ServiceLoaderTest {
 
         ServiceLoader.getService("JDBC", TransactionManagerFactory.class);
         ServiceLoader.getService("POOL", CommonDataSourceFactory.class);
-
+        ServiceLoader.getService("UNPOOL", CommonDataSourceFactory.class);
         ServiceLoader.getService("ATOMIKOS", TransactionManagerFactory.class);
         ServiceLoader.getService("ATOMIKOS", CommonDataSourceFactory.class);
 

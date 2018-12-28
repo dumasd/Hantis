@@ -1,8 +1,9 @@
 package com.thinkerwolf.hantis.cache;
 
-public class SimpleCacheFactory implements CacheFactory {
+public class SimpleCacheFactory extends AbstractCacheFactory {
+
     @Override
-    public Cache getObject() throws Exception {
+    protected Cache doGetObject() throws Exception {
         return new SimpleCache();
     }
 

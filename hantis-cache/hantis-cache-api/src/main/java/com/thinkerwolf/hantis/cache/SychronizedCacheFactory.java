@@ -1,8 +1,9 @@
 package com.thinkerwolf.hantis.cache;
 
-public class SychronizedCacheFactory implements CacheFactory {
+public class SychronizedCacheFactory extends AbstractCacheFactory {
+
     @Override
-    public Cache getObject() throws Exception {
+    protected Cache doGetObject() throws Exception {
         return new SychronizedCache();
     }
 

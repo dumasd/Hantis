@@ -125,29 +125,23 @@ public class XMLConfig {
 				ExecutorType executorType = executorType(xNode.evalNode("executor"));
 				Map<String, SqlNode> sqlNodeMap = sqlNodes(xNode.evalNode("mappings"));
 				Map<String, TableEntity<?>> entityMap = tableEntities(xNode.evalNode("mappings"));
+				
+				CacheFactory cacheFactory = cacheFactory(xNode.evalNode("cache"));
 
-				XNode cacheNode = xNode.evalNode("cache");
-				if (cacheNode != null) {
-					Properties cacheProps = cacheNode.getChildrenAsProperties();
-					CacheFactory cacheFactory = cacheFactory(xNode.evalNode("cache"));
-					if (cacheFactory != null) {
-						if (sqlNodeMap.size() > 0) {
-							Cache cache = cacheFactory.getObject();
-							PropertyUtils.setProperties(cache, cacheProps);
-							for (SqlNode sn : sqlNodeMap.values()) {
-								sn.setCache(cache);
-							}
+				if (cacheFactory != null) {
+					if (sqlNodeMap.size() > 0) {
+						Cache cache = cacheFactory.getObject();
+						for (SqlNode sn : sqlNodeMap.values()) {
+							sn.setCache(cache);
 						}
-						if (entityMap.size() > 0) {
-							Cache cache = cacheFactory.getObject();
-							PropertyUtils.setProperties(cache, cacheProps);
-							for (TableEntity<?> te : entityMap.values()) {
-								te.setCache(cache);
-							}
+					}
+					if (entityMap.size() > 0) {
+						Cache cache = cacheFactory.getObject();
+						for (TableEntity<?> te : entityMap.values()) {
+							te.setCache(cache);
 						}
 					}
 				}
-
 
 				builder.setId(id);
 				builder.setDataSource(ds);
@@ -181,7 +175,9 @@ public class XMLConfig {
 		if (StringUtils.isEmpty(type)) {
 			throw new HantisConfigException("Cache type is null");
 		}
-		return ServiceLoader.getService(type, CacheFactory.class);
+		CacheFactory factory = ServiceLoader.getService(type, CacheFactory.class);
+		factory.setProperties(xNode.getChildrenAsProperties());
+		return factory;
 	}
 
 	private CommonDataSource dataSource(XNode xNode) {

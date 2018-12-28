@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * sql 执行器
+ * SQL Executor
  */
 public interface Executor {
 

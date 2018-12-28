@@ -1,11 +1,12 @@
 package com.thinkerwolf.hantis.cache.redis;
 
+import com.thinkerwolf.hantis.cache.AbstractCacheFactory;
 import com.thinkerwolf.hantis.cache.Cache;
-import com.thinkerwolf.hantis.cache.CacheFactory;
 
-public class RedisCacheFactory implements CacheFactory {
+public class RedisCacheFactory extends AbstractCacheFactory {
+
     @Override
-    public Cache getObject() throws Exception {
+    protected Cache doGetObject() throws Exception {
         RedisCache cache = new RedisCache();
         return cache;
     }
