@@ -2,6 +2,8 @@ package com.thinkerwolf.hantis.executor;
 
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.session.Configuration;
+import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
+import com.thinkerwolf.hantis.sql.Sql;
 
 import javax.sql.CommonDataSource;
 import java.sql.SQLException;
@@ -15,38 +17,30 @@ public interface Executor {
 
 
     int DEFAULT_BATCH_UPDATE_RESULT = Integer.MIN_VALUE + 1024;
-    <T> List<T> queryForList(String sql, Class<T> clazz);
-    
-    <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz);
+    <T> List<T> queryForList(Sql sql, Class<T> clazz);
 
-    <T> T queryForOne(String sql, List<Param> params, Class<T> clazz);
+    <T> T queryForOne(Sql sql, Class<T> clazz);
     
-    List<Map<String, Object>> queryForList(String sql);
+    List<Map<String, Object>> queryForList(Sql sql);
     
-    List<Map<String, Object>> queryForList(String sql, List<Param> params);
+    Map<String, Object> queryForOne(Sql sql);
     
-    Map<String, Object> queryForOne(String sql, List<Param> params);
-    
-    <T> List<T> queryForList(String sql, List<Param> params, ResultSetListHandler<T> listHandler);
+    <T> List<T> queryForList(Sql sql, ResultSetListHandler<T> listHandler);
 
-    int update(String sql, List<Param> params);
+    int update(Sql sql);
+
+    boolean execute(Sql sql);
 
     <T> T execute(StatementExecuteCallback<T> callback);
-
-    void doBeforeCommit() throws SQLException;
-
-    void doBeforeRollback() throws SQLException;
-
-    void doAfterCommit() throws SQLException;
-
-    void doAfterRollback() throws SQLException;
 
     ExecutorType getType();
 
     void setDataSource(CommonDataSource dataSource);
 
-    void setConfiguration(Configuration configuration);
+    void setSessionFactoryBuilder(SessionFactoryBuilder sessionFactoryBuilder);
     
     void close();
+
+    List<BatchResult> flushStatments(boolean isRollback);
 
 }

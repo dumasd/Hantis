@@ -1,5 +1,6 @@
 package com.thinkerwolf.hantis.sql;
 
+import com.thinkerwolf.hantis.cache.Cache;
 import com.thinkerwolf.hantis.common.Param;
 import com.thinkerwolf.hantis.common.Params;
 
@@ -19,6 +20,8 @@ public class Sql {
     private StringBuilder sqlBuilder = new StringBuilder();
 
     private List<Param> params = new Params();
+
+    private Cache cache;
 
     /**
      * 参数类型
@@ -80,6 +83,13 @@ public class Sql {
         this.returnType = returnType;
     }
 
+    public Cache getCache() {
+        return cache;
+    }
+
+    public void setCache(Cache cache) {
+        this.cache = cache;
+    }
     //	public Configuration getConfiguration() {
 //		return configuration;
 //	}
@@ -91,8 +101,9 @@ public class Sql {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("[SQL]" + getSql());
-        sb.append(" [Params]" + params);
+        sb.append("[SQL]{" + getSql());
+        sb.append(", " + params);
+        sb.append("}");
         return sb.toString();
     }
 

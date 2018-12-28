@@ -9,6 +9,6 @@ import java.sql.ResultSet;
  */
 public interface RowHandler<T> {
 
-    T processRow(ResultSet rs) throws Throwable;
+    T processRow(ResultSet rs) throws Exception;
 
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapping namespace="user">
+    <update id = "createTable">
+        CREATE TABLE `user`  (
+        `id` int(11) NOT NULL,
+        `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+        `seq` int(255) DEFAULT NULL,
+        PRIMARY KEY (`id`) USING BTREE,
+        INDEX `index_seq`(`seq`) USING BTREE
+        ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+    </update>
+
+
+</mapping>

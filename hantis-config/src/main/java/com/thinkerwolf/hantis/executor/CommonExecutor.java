@@ -1,7 +1,6 @@
 package com.thinkerwolf.hantis.executor;
 
-
-import com.thinkerwolf.hantis.common.Param;
+import com.thinkerwolf.hantis.sql.Sql;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -11,8 +10,13 @@ import java.util.List;
 public class CommonExecutor extends AbstractExecutor {
 
     @Override
-    protected int doUpdate(String sql, List<Param> params, Connection connection) {
-        PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
+    protected List <BatchResult> doFlushStatments(boolean isRollback) {
+        return null;
+    }
+
+    @Override
+    protected int doUpdate(Sql sql, Connection connection) {
+        PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql.getSql(), sql.getParams());
         return execute(() -> {
         	PreparedStatement ps = null;
             try {

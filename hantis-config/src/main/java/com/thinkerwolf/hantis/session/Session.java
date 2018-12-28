@@ -33,4 +33,6 @@ public interface Session extends Closeable, OrmSession {
 
     int update(String mapping);
 
+    boolean execute(String mapping);
+
 }

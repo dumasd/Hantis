@@ -20,7 +20,7 @@ public final class SessionFactoryBuilder {
     private Configuration configuration;
     private ExecutorType executorType;
     private Map<String, TableEntity<?>> entityMap;
-
+    private List<Cache> caches;
 
     public String getId() {
         return id;
@@ -66,10 +66,18 @@ public final class SessionFactoryBuilder {
 		this.executorType = executorType;
 	}
 
+    public List <Cache> getCaches() {
+        return caches;
+    }
+
+    public void setCaches(List <Cache> caches) {
+        this.caches = caches;
+    }
+
     public SqlNode getSqlNode(String mapping) {
         SqlNode sqlNode = sqlNodeMap.get(mapping);
         if (sqlNode == null) {
-            throw new RuntimeException("[" + mapping + "] isn't found");
+            throw new RuntimeException("[" + mapping + "] mapping isn't found");
         }
         return sqlNode;
     }
@@ -82,17 +90,20 @@ public final class SessionFactoryBuilder {
         return sessionFactory;
     }
 
+    public void clearCache() {
+        if (caches != null) {
+            for (Cache cache : caches) {
+                try {
+                    cache.clear();
+                } catch (Exception e) {
+
+                }
+            }
+        }
+    }
 
     public void close() {
-        for (SqlNode sn : sqlNodeMap.values()) {
-            sn.getCache().clear();
-            break;
-        }
-        for (TableEntity<?> te : entityMap.values()) {
-            te.getCache().clear();
-            break;
-        }
-
+        clearCache();
     }
 
 }

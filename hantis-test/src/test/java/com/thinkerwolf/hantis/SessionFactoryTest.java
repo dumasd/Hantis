@@ -4,6 +4,7 @@ import com.thinkerwolf.hantis.common.StopWatch;
 import com.thinkerwolf.hantis.common.io.ClassPathResource;
 import com.thinkerwolf.hantis.common.io.Resource;
 import com.thinkerwolf.hantis.common.log.InternalLoggerFactory;
+import com.thinkerwolf.hantis.common.log.Logger;
 import com.thinkerwolf.hantis.common.log.jdk.JdkLoggerFactory;
 import com.thinkerwolf.hantis.example.*;
 import com.thinkerwolf.hantis.session.*;
@@ -18,6 +19,9 @@ public class SessionFactoryTest {
     @Test
     public void sessionTest() throws IOException {
         InternalLoggerFactory.setDefaultLoggerFactory(new JdkLoggerFactory());
+
+        Logger logger = InternalLoggerFactory.getLogger(SessionFactoryTest.class);
+
         Resource resource = new ClassPathResource("hantis_jdbc.xml");
         Configuration cfg = new Configuration();
         cfg.config(resource.getInputStream());
@@ -31,12 +35,24 @@ public class SessionFactoryTest {
             StopWatch sw = StopWatch.start();
 
             List<Blog> blogs = session.selectList("tableBlog.selectOne");
+            logger.info(blogs.toString());
 
-            System.out.println(blogs);
-            List<Blog> blogs1 = session1.selectList("tableBlog.selectOne");
+            Blog blog = new Blog();
+            blog.setUserId(21);
+            blog.setTitle("攻壳机动队");
+            blog.setCreateTime(new Date());
+            blog.setContent("攻壳机动队 XXXX");
+            session.create(blog);
 
-            System.out.println(blogs1);
-            System.out.println("Spend time : " + sw.end());
+            List<Blog> blogs1 = session.selectList("tableBlog.selectOne");
+            logger.info(blogs1.toString());
+
+//            boolean b = session.execute("user.createTable");
+//            logger.info(b + "");
+
+            session.commit();
+
+            logger.info("Spend time : " + sw.end());
         } finally {
             session.close();
         }

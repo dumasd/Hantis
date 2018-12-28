@@ -125,18 +125,20 @@ public class XMLConfig {
 				ExecutorType executorType = executorType(xNode.evalNode("executor"));
 				Map<String, SqlNode> sqlNodeMap = sqlNodes(xNode.evalNode("mappings"));
 				Map<String, TableEntity<?>> entityMap = tableEntities(xNode.evalNode("mappings"));
-				
-				CacheFactory cacheFactory = cacheFactory(xNode.evalNode("cache"));
 
+				List<Cache> caches = new ArrayList <>();
+				CacheFactory cacheFactory = cacheFactory(xNode.evalNode("cache"));
 				if (cacheFactory != null) {
 					if (sqlNodeMap.size() > 0) {
 						Cache cache = cacheFactory.getObject();
+						caches.add(cache);
 						for (SqlNode sn : sqlNodeMap.values()) {
 							sn.setCache(cache);
 						}
 					}
 					if (entityMap.size() > 0) {
 						Cache cache = cacheFactory.getObject();
+						caches.add(cache);
 						for (TableEntity<?> te : entityMap.values()) {
 							te.setCache(cache);
 						}
@@ -149,6 +151,7 @@ public class XMLConfig {
 				builder.setEntityMap(entityMap);
 				builder.setConfiguration(configuration);
 				builder.setExecutorType(executorType);
+				builder.setCaches(caches);
 				configuration.putSessionFactoryBuilder(builder);
 				if (!configuration.getTransactionManager().isDistributed()) {
 					break;

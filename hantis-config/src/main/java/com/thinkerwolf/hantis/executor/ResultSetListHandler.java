@@ -13,7 +13,7 @@ public class ResultSetListHandler<T> implements ResultSetHandler<List<T>> {
     }
 
     @Override
-    public List<T> process(ResultSet rs) throws Throwable {
+    public List<T> process(ResultSet rs) throws Exception {
         List<T> l = new ArrayList<>();
         for (; rs.next(); ) {
             l.add(rowHandler.processRow(rs));

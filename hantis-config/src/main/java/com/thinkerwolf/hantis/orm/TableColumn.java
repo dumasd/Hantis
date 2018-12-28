@@ -3,6 +3,7 @@ package com.thinkerwolf.hantis.orm;
 import com.thinkerwolf.hantis.common.util.ReflectionUtils;
 import com.thinkerwolf.hantis.executor.Executor;
 import com.thinkerwolf.hantis.orm.annotation.GeneratedValue;
+import com.thinkerwolf.hantis.sql.Sql;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -123,10 +124,11 @@ public class TableColumn {
 
 	private synchronized GenerateStrategy<?> createGenerateStrategy(Executor executor) {
 		Class<?> clazz = field.getType();
-		String maxSql = "SELECT MAX(" + columnName + ") as max FROM " + tableName;
-		Map<String, Object> map = executor.queryForOne(maxSql, Collections.emptyList());
+		Sql sql = new Sql(null);
+		sql.appendSql("SELECT MAX(" + columnName + ") as max FROM " + tableName);
+		Map<String, Object> map = executor.queryForOne(sql);
 		Object maxValue = map.get("max");
-		GenerateStrategy<?> generateStrategy = null;
+		GenerateStrategy<?> generateStrategy;
 		if (clazz == int.class || clazz == Integer.class) {
 			generateStrategy = new IntegerGenerateStrategy(maxValue == null ? 0 : (int) maxValue);
 		} else if (clazz == long.class || clazz == Long.class) {

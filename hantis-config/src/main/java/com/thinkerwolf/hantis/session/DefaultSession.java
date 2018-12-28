@@ -1,13 +1,10 @@
 package com.thinkerwolf.hantis.session;
 
-import com.thinkerwolf.hantis.cache.CacheKey;
+import com.thinkerwolf.hantis.common.SQLType;
 import com.thinkerwolf.hantis.common.StopWatch;
 import com.thinkerwolf.hantis.common.log.InternalLoggerFactory;
 import com.thinkerwolf.hantis.common.log.Logger;
-import com.thinkerwolf.hantis.executor.BatchExecutor;
-import com.thinkerwolf.hantis.executor.CommonExecutor;
-import com.thinkerwolf.hantis.executor.Executor;
-import com.thinkerwolf.hantis.executor.ExecutorType;
+import com.thinkerwolf.hantis.executor.*;
 import com.thinkerwolf.hantis.orm.TableEntity;
 import com.thinkerwolf.hantis.sql.Sql;
 import com.thinkerwolf.hantis.sql.SqlNode;
@@ -50,6 +47,7 @@ public class DefaultSession implements Session {
 		try {
 			doTransactionClose();
 			executor.close();
+			builder.clearCache();
 		} catch (Exception e) {
 			logger.error("close error", e);
 		}
@@ -58,22 +56,20 @@ public class DefaultSession implements Session {
 	@Override
 	public void commit() {
 		try {
-			executor.doBeforeCommit();
+			executor.flushStatments(false);
 			doTransactionCommit();
-			executor.doAfterCommit();
 		} catch (SQLException e) {
-			logger.error("commit", e);
+			logger.error("commit error!", e);
 		}
 	}
 
 	@Override
 	public void rollback() {
 		try {
-			executor.doBeforeRollback();
+			executor.flushStatments(true);
 			doTransactionRollback();
-			executor.doAfterRollback();
 		} catch (SQLException e) {
-			logger.error("rollback", e);
+			logger.error("rollback error!", e);
 		}
 	}
 
@@ -135,39 +131,8 @@ public class DefaultSession implements Session {
 
 	@Override
 	public <T> List<T> selectList(String mapping, Object parameter) {
-		SqlNode sn = builder.getSqlNode(mapping);
-		Sql sql = new Sql(parameter);
-		StopWatch sw = StopWatch.start();
-		try {
-			sn.generate(sql);
-		} catch (Throwable throwable) {
-			logger.error("Generate sql error", throwable);
-			return null;
-		}
-		if (logger.isDebugEnabled()) {
-			logger.debug("Generate sql {" + sql.toString() +"} time(ms) : " + sw.end());
-		}
-
-		CacheKey cacheKey = null;
-		if (sn.getCache() != null) {
-			cacheKey = new CacheKey();
-			cacheKey.append(sql.getSql()).append(sql.getParams());
-			Object obj = sn.getCache().getObject(cacheKey);
-			if (obj != null) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Use secondary cache");
-				}
-				return (List<T>) obj;
-			}
-		}
-
-		List<T> resList = executor.queryForList(sql.getSql(), sql.getParams(), (Class<T>) sql.getReturnType());
-
-		if (sn.getCache() != null) {
-			sn.getCache().putObject(cacheKey, resList);
-		}
-
-		return resList;
+		Sql sql = generateSQL(mapping, parameter);
+		return executor.queryForList(sql, (Class<T>) sql.getReturnType());
 	}
 
 	@Override
@@ -216,8 +181,13 @@ public class DefaultSession implements Session {
 		if (sn.getCache() != null) {
 			sn.getCache().clear();
 		}
+		return executor.update(sql);
+	}
 
-		return executor.update(sql.getSql(), sql.getParams());
+	@Override
+	public boolean execute(String mapping) {
+		Sql sql = generateSQL(mapping, null);
+		return executor.execute(sql);
 	}
 
 	@Override
@@ -225,52 +195,10 @@ public class DefaultSession implements Session {
 		return update(mapping, null);
 	}
 
-	private Executor createExecutor(ExecutorType executorType) {
-		executorType = executorType == null ? ExecutorType.COMMON : executorType;
-		Executor executor;
-		switch (executorType) {
-		case COMMON:
-			executor = new CommonExecutor();
-			break;
-		case BATCH:
-			executor = new BatchExecutor();
-			break;
-		default:
-			executor = new CommonExecutor();
-			break;
-		}
-		executor.setDataSource(builder.getDataSource());
-		executor.setConfiguration(builder.getConfiguration());
-		// executor.setSessionFactoryBuilder(builder);
-		return executor;
-	}
-
 	@Override
 	public <T> List<T> getList(Class<T> clazz, Object parameter) {
-		TableEntity tableEntity = getTableEntity(clazz);
-		Sql sql = tableEntity.parseSelectSql(parameter);
-
-		CacheKey cacheKey = null;
-		if (tableEntity.getCache() != null) {
-			cacheKey = new CacheKey();
-			cacheKey.append(sql.getSql()).append(sql.getParams());
-			Object obj = tableEntity.getCache().getObject(cacheKey);
-			if (obj != null) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("Use secondary cache");
-				}
-				return (List<T>) obj;
-			}
-		}
-
-		List<T> resList = executor.queryForList(sql.getSql(), sql.getParams(), clazz);
-
-
-		if (tableEntity.getCache() != null) {
-			tableEntity.getCache().putObject(cacheKey, resList);
-		}
-
-		return resList;
+		Sql sql = generateSQL(clazz, parameter, SQLType.QUERY);
+		return executor.queryForList(sql, clazz);
 	}
 
 	@Override
@@ -284,41 +212,87 @@ public class DefaultSession implements Session {
 
 	@Override
 	public <T> int update(T entity) {
-		TableEntity tableEntity = getTableEntity(entity.getClass());
-		Sql sql = tableEntity.parseUpdateSql(executor, entity);
-		if (tableEntity.getCache() != null) {
-			tableEntity.getCache().clear();
-		}
-		return executor.update(sql.getSql(), sql.getParams());
+		Sql sql = generateSQL(entity.getClass(), entity, SQLType.UPDATE);
+		return executor.update(sql);
 	}
 
 	@Override
 	public <T> int delete(T entity) {
-		TableEntity tableEntity = getTableEntity(entity.getClass());
-		Sql sql = tableEntity.parseDeleteSql(executor, entity);
-		if (tableEntity.getCache() != null) {
-			tableEntity.getCache().clear();
-		}
-		return executor.update(sql.getSql(), sql.getParams());
+		Sql sql =  generateSQL(entity.getClass(), entity, SQLType.DELETE);
+		return executor.update(sql);
 	}
 
 	@Override
 	public <T> int create(T entity) {
-		TableEntity tableEntity = getTableEntity(entity.getClass());
-		Sql sql = tableEntity.parseInsertSql(executor, entity);
-		if (tableEntity.getCache() != null) {
-			tableEntity.getCache().clear();
-		}
-		return executor.update(sql.getSql(), sql.getParams());
+		Sql sql = generateSQL(entity.getClass(), entity, SQLType.INSERT);
+		return executor.update(sql);
 	}
 
-	private TableEntity getTableEntity(Class<?> clazz) {
-		TableEntity tableEntity = builder.getEntityMap().get(clazz.getName());
+
+	private Sql generateSQL(String mapping, Object parameter) {
+		SqlNode sn = builder.getSqlNode(mapping);
+		Sql sql = new Sql(parameter);
+		StopWatch sw = StopWatch.start();
+		try {
+			sn.generate(sql);
+		} catch (Throwable throwable) {
+			logger.error("Generate sql error", throwable);
+			return null;
+		}
+		if (logger.isDebugEnabled()) {
+			logger.debug("Generate sql {" + sql.toString() +"} time(ms) : " + sw.end());
+		}
+		sql.setCache(sn.getCache());
+		return sql;
+	}
+
+	private <T> Sql generateSQL(Class<T> entityClass, Object parameter, SQLType sqlType) {
+		TableEntity tableEntity = builder.getEntityMap().get(entityClass.getName());
 		if (tableEntity == null) {
 			throw new RuntimeException("Table entity null");
 		}
-		return tableEntity;
+		Sql sql = null;
+		switch (sqlType) {
+			case QUERY:
+				sql = tableEntity.parseSelectSql(parameter);
+				break;
+			case INSERT:
+				sql = tableEntity.parseInsertSql(executor, parameter);
+				break;
+			case UPDATE:
+				sql = tableEntity.parseUpdateSql(executor, parameter);
+				break;
+			case DELETE:
+				sql = tableEntity.parseDeleteSql(executor, parameter);
+				break;
+			default:
+				break;
+		}
+		if (sql == null) {
+			throw new RuntimeException("Table entity null");
+		}
+		sql.setCache(tableEntity.getCache());
+		return sql;
 	}
 
+
+	private Executor createExecutor(ExecutorType executorType) {
+		executorType = executorType == null ? ExecutorType.COMMON : executorType;
+		Executor executor;
+		switch (executorType) {
+			case COMMON:
+				executor = new CommonExecutor();
+				break;
+			case BATCH:
+				executor = new BatchExecutor();
+				break;
+			default:
+				executor = new CommonExecutor();
+				break;
+		}
+		executor.setDataSource(builder.getDataSource());
+		executor.setSessionFactoryBuilder(builder);
+		return executor;
+	}
 
 }

@@ -4,6 +4,6 @@ import java.sql.ResultSet;
 
 public interface ResultSetHandler<T> {
 
-    T process(ResultSet rs) throws Throwable;
+    T process(ResultSet rs) throws Exception;
 
 }

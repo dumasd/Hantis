@@ -10,6 +10,8 @@ import com.thinkerwolf.hantis.common.log.InternalLoggerFactory;
 import com.thinkerwolf.hantis.common.log.Logger;
 import com.thinkerwolf.hantis.common.util.PropertyUtils;
 import com.thinkerwolf.hantis.session.Configuration;
+import com.thinkerwolf.hantis.session.SessionFactoryBuilder;
+import com.thinkerwolf.hantis.sql.Sql;
 import com.thinkerwolf.hantis.transaction.ConnectionHolder;
 import com.thinkerwolf.hantis.transaction.ConnectionUtils;
 import com.thinkerwolf.hantis.type.JDBCType;
@@ -21,7 +23,6 @@ import javax.sql.XADataSource;
 
 
 import java.sql.*;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,10 +40,9 @@ public abstract class AbstractExecutor implements Executor {
 	/** First level cache */
 	private Cache cache = new SimpleCache();
 
-	public CommonDataSource getDataSource() {
-		return dataSource;
-	}
+	private SessionFactoryBuilder sessionFactoryBuilder;
 
+	@Override
 	public void setDataSource(CommonDataSource dataSource) {
 		this.dataSource = dataSource;
 	}
@@ -51,43 +51,20 @@ public abstract class AbstractExecutor implements Executor {
 		return configuration;
 	}
 
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
+	@Override
+	public void setSessionFactoryBuilder(SessionFactoryBuilder sessionFactoryBuilder) {
+		this.sessionFactoryBuilder = sessionFactoryBuilder;
+		this.configuration = sessionFactoryBuilder.getConfiguration();
 	}
 
 	@Override
-	public void doBeforeCommit() throws SQLException {
-
+	public <T> List<T> queryForList(Sql sql, Class<T> clazz) {
+		return queryForList(sql, new ResultSetListHandler<>(new ClassRowHander<>(clazz, nameHandler)));
 	}
 
 	@Override
-	public void doBeforeRollback() throws SQLException {
-
-	}
-
-	@Override
-	public void doAfterCommit() throws SQLException {
-
-	}
-
-	@Override
-	public void doAfterRollback() throws SQLException {
-
-	}
-
-	@Override
-	public <T> List<T> queryForList(String sql, List<Param> params, Class<T> clazz) {
-		return queryForList(sql, params, new ResultSetListHandler<>(new ClassRowHander<>(clazz, nameHandler)));
-	}
-
-	@Override
-	public <T> List<T> queryForList(String sql, Class<T> clazz) {
-		return queryForList(sql, Collections.emptyList(), clazz);
-	}
-
-	@Override
-	public <T> T queryForOne(String sql, List<Param> params, Class<T> clazz) {
-		List<T> l = queryForList(sql, params, clazz);
+	public <T> T queryForOne(Sql sql, Class<T> clazz) {
+		List<T> l = queryForList(sql, clazz);
 		if (l.size() == 0) {
 			return null;
 		}
@@ -98,18 +75,13 @@ public abstract class AbstractExecutor implements Executor {
 	}
 
 	@Override
-	public List<Map<String, Object>> queryForList(String sql, List<Param> params) {
-		return queryForList(sql, params, new ResultSetListHandler<>(new MapRowHandler()));
+	public List<Map<String, Object>> queryForList(Sql sql) {
+		return queryForList(sql, new ResultSetListHandler<>(new MapRowHandler()));
 	}
 
 	@Override
-	public List<Map<String, Object>> queryForList(String sql) {
-		return queryForList(sql, Collections.emptyList());
-	}
-
-	@Override
-	public Map<String, Object> queryForOne(String sql, List<Param> params) {
-		List<Map<String, Object>> l = queryForList(sql, params);
+	public Map<String, Object> queryForOne(Sql sql) {
+		List<Map<String, Object>> l = queryForList(sql);
 		if (l.size() == 0) {
 			return null;
 		}
@@ -120,27 +92,67 @@ public abstract class AbstractExecutor implements Executor {
 	}
 
 	@Override
-	public <T> List<T> queryForList(String sql, List<Param> params, ResultSetListHandler<T> listHandler) {
+	public <T> List<T> queryForList(Sql sql, ResultSetListHandler<T> listHandler) {
 		Connection connection = getConnection();
-		CacheKey cacheKey = createCacheKey(sql, params);
-		RowBound rb = (RowBound) cache.getObject(cacheKey);
-		QueryStatementExecuteCallback<List<T>> callback;
-		if (rb == null) {
-			PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql, params);
-			callback = new QueryStatementExecuteCallback<>(builder, listHandler);
-			if (logger.isDebugEnabled()) {
-				logger.debug("[" + sql + "] queryForList no cache");
-			}
-		} else {
-			callback = new QueryStatementExecuteCallback<>(listHandler, rb);
-			if (logger.isDebugEnabled()) {
-				logger.debug("[" + sql + "] queryForList use cache");
+		flushStatments(false);
+		CacheKey cacheKey = createCacheKey(sql, listHandler);
+
+		// Query from first level cache
+		List<T> result = (List <T>) cache.getObject(cacheKey);
+		if (result != null && logger.isDebugEnabled()) {
+			logger.debug("Use first level cache:" + sql);
+		}
+
+		// Query from second leval cache
+		if (result == null && sql.getCache() != null) {
+			result = (List <T>) sql.getCache().getObject(cacheKey);
+			if (result != null && logger.isDebugEnabled()) {
+				logger.debug("Use second level cache:" + sql);
 			}
 		}
-		List<T> result = execute(callback);
-		cache.putObject(cacheKey, callback.getRowBound());
+
+		if (result == null) {
+			// Query from database
+			if (logger.isDebugEnabled()) {
+				logger.debug("Query no cache: " + sql);
+			}
+			PreparedStatementBuilder builder = new PreparedStatementBuilderImpl(connection, sql.getSql(), sql.getParams());
+			QueryStatementExecuteCallback<List<T>> callback = new QueryStatementExecuteCallback<>(builder, listHandler);
+			result = execute(callback);
+
+			// Save to cache
+			cache.removeObject(cacheKey);
+			cache.putObject(cacheKey, result);
+			if (sql.getCache() != null) {
+				sql.getCache().removeObject(cacheKey);
+				sql.getCache().putObject(cacheKey, result);
+			}
+		}
 		return result;
 	}
+
+
+	private <T> CacheKey createCacheKey(Sql sql, ResultSetListHandler<T> listHandler) {
+		CacheKey key = new CacheKey();
+		key.append(sql.getSql()).append(sql.getParams()).append(listHandler.getClass());
+		return key;
+	}
+
+
+	@Override
+	public List<BatchResult> flushStatments(boolean isRollback) {
+		if (logger.isDebugEnabled()) {
+			logger.debug("Flush statments");
+		}
+		List<BatchResult> batchResults = doFlushStatments(isRollback);
+		if (batchResults != null && batchResults.size() > 0) {
+			clearAllCache();
+		}
+		return batchResults;
+	}
+
+	protected abstract List<BatchResult> doFlushStatments(boolean isRollback);
+
 
 	@Override
 	public <T> T execute(StatementExecuteCallback<T> callback) {
@@ -148,19 +160,25 @@ public abstract class AbstractExecutor implements Executor {
 	}
 
 	@Override
-	public int update(String sql, List<Param> params) {
+	public int update(Sql sql) {
 		Connection connection = getConnection();
-		int num = doUpdate(sql, params, connection);
-		cache.clear();
+		int num = doUpdate(sql, connection);
+		clearAllCache();
 		return num;
 	}
 
-	protected abstract int doUpdate(String sql, List<Param> params, Connection connection);
+	protected abstract int doUpdate(Sql sql, Connection connection);
 
-	private CacheKey createCacheKey(String sql, List<Param> params) {
-		CacheKey key = new CacheKey();
-		key.append(sql).append(params);
-		return key;
+	private void clearAllCache() {
+		cache.clear();
+		sessionFactoryBuilder.clearCache();
+	}
+
+	@Override
+	public boolean execute(Sql sql) {
+		Connection connection = getConnection();
+		flushStatments(false);
+		return execute(new CommonStatmentExecuteCallback(new StatementBuilderImpl(connection), sql.getSql()));
 	}
 
 	protected Connection getConnection() {
@@ -211,7 +229,7 @@ public abstract class AbstractExecutor implements Executor {
 		}
 
 		@Override
-		public T processRow(ResultSet rs) throws Throwable {
+		public T processRow(ResultSet rs) throws Exception {
 			T t = clazz.newInstance();
 			ResultSetMetaData meta = rs.getMetaData();
 			int count = meta.getColumnCount();
@@ -226,7 +244,7 @@ public abstract class AbstractExecutor implements Executor {
 
 	private static class MapRowHandler implements RowHandler<Map<String, Object>> {
 		@Override
-		public Map<String, Object> processRow(ResultSet rs) throws Throwable {
+		public Map<String, Object> processRow(ResultSet rs) throws Exception {
 			Map<String, Object> map = new HashMap<>();
 			ResultSetMetaData meta = rs.getMetaData();
 			int count = meta.getColumnCount();
@@ -239,38 +257,17 @@ public abstract class AbstractExecutor implements Executor {
 		}
 	}
 
-	private static class QueryStatementExecuteCallback<T> implements StatementExecuteCallback<T> {
-		private PreparedStatementBuilder builder;
-		private ResultSetHandler<T> listHandler;
-		private RowBound rowBound;
+	protected class StatementBuilderImpl implements StatementBuilder {
+		private Connection connection;
 
-		public QueryStatementExecuteCallback(PreparedStatementBuilder builder, ResultSetHandler<T> listHandler) {
-			this.builder = builder;
-			this.listHandler = listHandler;
-		}
-
-		public QueryStatementExecuteCallback(ResultSetHandler<T> listHandler, RowBound rowBound) {
-			this.listHandler = listHandler;
-			this.rowBound = rowBound;
+		public StatementBuilderImpl(Connection connection) {
+			this.connection = connection;
 		}
 
 		@Override
-		public T execute() {
-			try {
-				ResultSet rs;
-				if (rowBound == null) {
-					PreparedStatement ps = builder.build();
-					rs = ps.executeQuery();
-					rowBound = new RowBound(rs);
-				}
-				return listHandler.process(rowBound.getResultSet());
-			} catch (Throwable e) {
-				throw new RuntimeException(e);
-			}
-		}
-
-		public RowBound getRowBound() {
-			return rowBound;
+		public Statement build() throws Exception {
+			Statement s = connection.createStatement();
+			return s;
 		}
 	}
 
@@ -279,7 +276,6 @@ public abstract class AbstractExecutor implements Executor {
 		private Connection connection;
 		private String sql;
 		private List<Param> params;
-		private PreparedStatement ps;
 
 		public PreparedStatementBuilderImpl(Connection connection, String sql, List<Param> params) {
 			this.connection = connection;
@@ -287,16 +283,9 @@ public abstract class AbstractExecutor implements Executor {
 			this.params = params;
 		}
 
-		public PreparedStatementBuilderImpl(PreparedStatement ps, List<Param> params) {
-			this.ps = ps;
-			this.params = params;
-		}
-
 		@Override
-		public PreparedStatement build() throws Throwable {
-			if (ps == null) {
-				ps = connection.prepareStatement(sql);
-			}
+		public PreparedStatement build() throws Exception {
+			PreparedStatement ps = connection.prepareStatement(sql);
 			if (params != null) {
 				for (int i = 0; i < params.size(); i++) {
 					Param param = params.get(i);

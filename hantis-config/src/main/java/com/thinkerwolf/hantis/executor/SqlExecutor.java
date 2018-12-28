@@ -141,7 +141,7 @@ public class SqlExecutor {
         }
 
         @Override
-        public T processRow(ResultSet rs) throws Throwable {
+        public T processRow(ResultSet rs) throws Exception {
             T t = clazz.newInstance();
             ResultSetMetaData meta = rs.getMetaData();
             int count = meta.getColumnCount();
@@ -156,7 +156,7 @@ public class SqlExecutor {
 
     private static class MapRowHandler implements RowHandler<Map<String, Object>> {
         @Override
-        public Map<String, Object> processRow(ResultSet rs) throws Throwable {
+        public Map<String, Object> processRow(ResultSet rs) throws Exception {
             Map<String, Object> map = new HashMap<>();
             ResultSetMetaData meta = rs.getMetaData();
             int count = meta.getColumnCount();
@@ -203,7 +203,7 @@ public class SqlExecutor {
         }
 
         @Override
-        public PreparedStatement build() throws Throwable {
+        public PreparedStatement build() throws Exception {
             PreparedStatement ps = connection.prepareStatement(sql);
             if (params != null) {
                 for (int i = 0; i < params.size(); i++) {
