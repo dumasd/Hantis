@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.Map;
 
+import com.thinkerwolf.hantis.executor.Executor;
 import com.thinkerwolf.hantis.transaction.Transaction;
 import com.thinkerwolf.hantis.transaction.TransactionDefinition;
 
@@ -34,5 +35,7 @@ public interface Session extends Closeable, OrmSession {
     int update(String mapping);
 
     boolean execute(String mapping);
+
+    Executor getExecutor();
 
 }

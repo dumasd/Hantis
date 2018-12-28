@@ -94,7 +94,7 @@ public abstract class AbstractExecutor implements Executor {
 	@Override
 	public <T> List<T> queryForList(Sql sql, ResultSetListHandler<T> listHandler) {
 		Connection connection = getConnection();
-		flushStatments(false);
+		sessionFactoryBuilder.flushSessions(false);
 		CacheKey cacheKey = createCacheKey(sql, listHandler);
 
 		// Query from first level cache
@@ -146,7 +146,7 @@ public abstract class AbstractExecutor implements Executor {
 		}
 		List<BatchResult> batchResults = doFlushStatments(isRollback);
 		if (batchResults != null && batchResults.size() > 0) {
-			clearAllCache();
+			clearCache();
 		}
 		return batchResults;
 	}
@@ -163,15 +163,15 @@ public abstract class AbstractExecutor implements Executor {
 	public int update(Sql sql) {
 		Connection connection = getConnection();
 		int num = doUpdate(sql, connection);
-		clearAllCache();
+		clearCache();
+		sessionFactoryBuilder.clearCache();
 		return num;
 	}
 
 	protected abstract int doUpdate(Sql sql, Connection connection);
 
-	private void clearAllCache() {
+	private void clearCache() {
 		cache.clear();
-		sessionFactoryBuilder.clearCache();
 	}
 
 	@Override

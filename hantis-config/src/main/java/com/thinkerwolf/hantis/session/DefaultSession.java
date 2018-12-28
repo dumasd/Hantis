@@ -43,6 +43,11 @@ public class DefaultSession implements Session {
 	}
 
 	@Override
+	public Executor getExecutor() {
+		return executor;
+	}
+
+	@Override
 	public void close() throws IOException {
 		try {
 			doTransactionClose();

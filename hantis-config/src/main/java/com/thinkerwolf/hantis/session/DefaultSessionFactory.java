@@ -23,6 +23,7 @@ public class DefaultSessionFactory implements SessionFactory {
 	public Session openSession(boolean autoCommit) {
 		TransactionDefinition td = new DefaultTransactionDefinition(autoCommit);
 		DefaultSession session = new DefaultSession(td, builder);
+		builder.sessions.add(session);
 		return session;
 	}
     

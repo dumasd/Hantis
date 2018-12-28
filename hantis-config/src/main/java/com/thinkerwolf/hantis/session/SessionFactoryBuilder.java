@@ -8,6 +8,7 @@ import com.thinkerwolf.hantis.sql.SqlNode;
 import javax.sql.CommonDataSource;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author wukai
@@ -21,6 +22,8 @@ public final class SessionFactoryBuilder {
     private ExecutorType executorType;
     private Map<String, TableEntity<?>> entityMap;
     private List<Cache> caches;
+
+    List<Session> sessions = new CopyOnWriteArrayList<>();
 
     public String getId() {
         return id;
@@ -90,6 +93,16 @@ public final class SessionFactoryBuilder {
         return sessionFactory;
     }
 
+    public void flushSessions(boolean isRollback) {
+        for (Session session : sessions) {
+            try {
+                session.getExecutor().flushStatments(isRollback);
+            } catch (Exception e) {
+            }
+        }
+        clearCache();
+    }
+
     public void clearCache() {
         if (caches != null) {
             for (Cache cache : caches) {
@@ -105,5 +118,8 @@ public final class SessionFactoryBuilder {
     public void close() {
         clearCache();
     }
+
+
+
 
 }

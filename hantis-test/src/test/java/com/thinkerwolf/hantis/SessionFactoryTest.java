@@ -44,7 +44,7 @@ public class SessionFactoryTest {
             blog.setContent("攻壳机动队 XXXX");
             session.create(blog);
 
-            List<Blog> blogs1 = session.selectList("tableBlog.selectOne");
+            List<Blog> blogs1 = session1.selectList("tableBlog.selectOne");
             logger.info(blogs1.toString());
 
 //            boolean b = session.execute("user.createTable");
